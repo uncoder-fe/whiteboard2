@@ -82,9 +82,13 @@ function Stage(props: StageProps) {
 	}
 	// 检测命中放大区域
 	const hitSpriteGrow = (x, y) => {
-		const { left, top, width, height } = history.current.find(
+		const findShape = history.current.find(
 			(item) => item.id === currentShapeId.current,
 		)
+		if (!findShape) {
+			return null
+		}
+		const { left, top, width, height } = findShape
 		if (
 			left + width / 2 - rectSize / 2 < x &&
 			x < left + width / 2 + rectSize / 2 &&
@@ -510,35 +514,40 @@ function Stage(props: StageProps) {
 				}
 				// 移动
 				if (action === 'move') {
-					if (currentShapeId.current) {
-						// 存在高亮
-						const isGrow = hitSpriteGrow(event.x, event.y)
-						if (isGrow) {
-							const r = history.current.find(
-								(item) => item.id === currentShapeId.current,
-							)
-							shape = JSON.parse(JSON.stringify(r))
-						} else {
-							// 寻找shape
-							const hitArry = hitSprite(event.x, event.y)
-							if (hitArry.length > 0) {
+					// 存在高亮，判定是不是缩放区域
+					const isGrow = hitSpriteGrow(event.x, event.y)
+					if (isGrow) {
+						const r = history.current.find(
+							(item) => item.id === currentShapeId.current,
+						)
+						shape = JSON.parse(JSON.stringify(r))
+					} else {
+						// 重新寻找新shape
+						const hitArry = hitSprite(event.x, event.y)
+						if (hitArry.length > 0) {
+							// 继续使用旧的
+							if (
+								hitArry.some(
+									(item) =>
+										item.id === currentShapeId.current,
+								)
+							) {
+								const r = history.current.find(
+									(item) =>
+										item.id === currentShapeId.current,
+								)
+								shape = JSON.parse(JSON.stringify(r))
+							} else {
+								// 全新
 								shape = JSON.parse(
 									JSON.stringify(hitArry[hitArry.length - 1]),
 								)
 							}
 						}
-					} else {
-						// 寻找shape
-						const hitArry = hitSprite(event.x, event.y)
-						if (hitArry.length > 0) {
-							shape = JSON.parse(
-								JSON.stringify(hitArry[hitArry.length - 1]),
-							)
-						}
 					}
 					if (shape) {
 						currentShapeId.current = shape.id
-						// 从真实区域删除这个shape
+						// 从真实区域删除这个shape的渲染
 						reRender()
 						// 把这个shape渲染到事件屏操作
 						drawShapeWidthControl(shape)
@@ -697,15 +706,15 @@ function Stage(props: StageProps) {
 				drawShapeWidthControl(cloneShape)
 			}
 		})
-		// 注册滑动手势变化流
+		// 注册滑动手势变化流，放到上面流
 		let source2 = merge($mousemove, $touchmove).pipe(map((event) => event))
 		const sub2 = source2.subscribe((position: { x: number; y: number }) => {
 			if (currentShapeId.current) {
 				const sl = hitSprite(position.x, position.y)
 				if (sl.length > 0) {
-					const pointer = hitSpriteGrow(position.x, position.y)
-					if (pointer) {
-						outerContainer.current.style.cursor = CURSOR[pointer]
+					const isGrow = hitSpriteGrow(position.x, position.y)
+					if (isGrow) {
+						outerContainer.current.style.cursor = CURSOR[isGrow]
 					} else {
 						outerContainer.current.style.cursor = CURSOR['move']
 					}
