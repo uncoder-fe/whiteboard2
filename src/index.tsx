@@ -181,15 +181,20 @@ function getVertex(maxWidth, maxHeight, width, height, x, y) {
 }
 // 辅助线
 function helpAxis(ctx, x, y, width, height, sizeX, sizeY) {
+	ctx.save()
+	ctx.setLineDash([2, 6])
+	ctx.strokeStyle = 'yellow'
+	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(x + width / 2, y)
 	ctx.lineTo(x + width / 2, y + height)
 	ctx.moveTo(x, height / 2 + y)
 	ctx.lineTo(x + width, height / 2 + y)
 	ctx.stroke()
-	ctx.fillRect(x, y, sizeX, sizeY)
-	ctx.fillRect(x + sizeX, y + sizeY, sizeX, sizeY)
-	ctx.fillRect(x - sizeX, y - sizeY, sizeX, sizeY)
+	ctx.strokeRect(x, y, sizeX, sizeY)
+	ctx.strokeRect(x + sizeX, y + sizeY, sizeX, sizeY)
+	ctx.strokeRect(x - sizeX, y - sizeY, sizeX, sizeY)
+	ctx.restore()
 }
 function Stage(props: StageProps) {
 	const {
