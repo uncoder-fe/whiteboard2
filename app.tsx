@@ -5,7 +5,7 @@ import plugins from './src/plugins'
 import icon from './default.jpeg'
 
 const App = () => {
-	const [action, setAction] = useState('rect')
+	const [action, setAction] = useState('moveCanvas')
 	const cRef = useRef(null)
 	return (
 		<div>
@@ -30,6 +30,13 @@ const App = () => {
 					}}
 				>
 					move
+				</button>
+				<button
+					onClick={() => {
+						setAction('moveCanvas')
+					}}
+				>
+					moveCanvas
 				</button>
 				<button
 					onClick={() => {

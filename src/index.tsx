@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { merge, fromEvent } from 'rxjs'
-import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators'
+import { tap, map, switchMap, takeUntil, skipWhile, max } from 'rxjs/operators'
 import { StageProps } from './interface'
 
 import styles from './index.less'
@@ -42,6 +42,155 @@ const CURSOR = {
 	default: 'default',
 	move: 'move',
 }
+// 计算位置
+const genPosition = (ops) => {
+	const { isGrow, disX, disY, top, left, width, height } = ops
+	const disXY = disX * (height / width)
+	let newLeft = left
+	let newTop = top
+	let newWidth = width
+	let newHeight = height
+	if (isGrow) {
+		// 某一方向放大或者缩小
+		switch (isGrow) {
+			case 'topCenter':
+				newTop = top + disY
+				newHeight = height - disY
+				if (newHeight < 0) {
+					// 反向运动
+					newTop = top + height
+					newHeight = Math.abs(newHeight)
+				}
+				break
+			case 'rightTop':
+				newTop = top - disXY
+				newWidth = width + disX
+				newHeight = height + disXY
+				if (newHeight < 0) {
+					// 反向运动
+					newTop = top + height
+					newHeight = Math.abs(newHeight)
+				}
+				if (newWidth < 0) {
+					// 反向运动
+					newLeft = left + newWidth
+					newWidth = Math.abs(newWidth)
+				}
+				break
+			case 'rightCenter':
+				newWidth = width + disX
+				if (newWidth < 0) {
+					// 反向运动
+					newLeft = left + newWidth
+					newWidth = Math.abs(newWidth)
+				}
+				break
+			case 'rightBottom':
+				newWidth = width + disX
+				newHeight = height + disX
+				if (newWidth < 0) {
+					// 反向运动
+					newLeft = left + newWidth
+					newWidth = Math.abs(newWidth)
+				}
+				if (newHeight < 0) {
+					// 反向运动
+					newTop = top + newHeight
+					newHeight = Math.abs(newHeight)
+				}
+				break
+			case 'bottomCenter':
+				newHeight = height + disY
+				if (newHeight < 0) {
+					// 反向运动
+					newTop = top + newHeight
+					newHeight = Math.abs(newHeight)
+				}
+				break
+			case 'leftBottom':
+				newLeft = left + disX
+				newWidth = width - disX
+				newHeight = height - disX
+				if (newHeight < 0) {
+					// 反向运动
+					newTop = top + newHeight
+					newHeight = Math.abs(newHeight)
+				}
+				if (newWidth < 0) {
+					// 反向运动
+					newLeft = left + width
+					newWidth = Math.abs(newWidth)
+				}
+				break
+			case 'leftCenter':
+				newLeft = left + disX
+				newWidth = width - disX
+				if (newWidth < 0) {
+					// 反向运动
+					newLeft = left + width
+					newWidth = Math.abs(newWidth)
+				}
+				break
+			case 'leftTop':
+				newLeft = left + disX
+				newTop = top + disX
+				newWidth = width - disX
+				newHeight = height - disX
+				if (newWidth < 0) {
+					// 反向运动
+					newLeft = left + width
+					newWidth = Math.abs(newWidth)
+				}
+				if (newHeight < 0) {
+					// 反向运动
+					newTop = top + height
+					newHeight = Math.abs(newHeight)
+				}
+				break
+			default:
+				break
+		}
+	} else {
+		// 移动
+		newLeft = left + disX
+		newTop = top + disY
+	}
+	return { newLeft, newTop, newWidth, newHeight }
+}
+// 顶点坐标
+function getVertex(maxWidth, maxHeight, width, height, x, y) {
+	let newX = x
+	let newY = y
+	const minX = -(maxWidth - width) / 2
+	const minY = -(maxHeight - height) / 2
+	const maxX = maxWidth - width - (maxWidth - width) / 2
+	const maxY = maxHeight - height - (maxHeight - height) / 2
+	if (x > maxX) {
+		newX = maxX
+	}
+	if (x < minX) {
+		newX = minX
+	}
+	if (y > maxY) {
+		newY = maxY
+	}
+	if (y < minY) {
+		newY = minY
+	}
+	return [newX, newY]
+}
+// 辅助线
+function helpAxis(ctx, x, y, width, height) {
+	ctx.beginPath()
+	ctx.moveTo(x + width / 2, y)
+	ctx.lineTo(x + width / 2, y + height)
+	ctx.moveTo(x, height / 2 + y)
+	ctx.lineTo(x + width, height / 2 + y)
+	ctx.stroke()
+	ctx.fillRect(x, y, 100, 100)
+	ctx.fillRect(x + 100, y + 100, 100, 100)
+	ctx.fillRect(x - 100, y - 100, 100, 100)
+}
 function Stage(props: StageProps) {
 	const {
 		action,
@@ -54,6 +203,11 @@ function Stage(props: StageProps) {
 		initHistory = [],
 		imgUrl,
 	} = props
+	// 最大画布
+	const maxWidth = 1000
+	const maxHeight = 1000
+	// 原始坐标系，viewport
+	const axisPosition = useRef([0, 0])
 	// 绘制动作组
 	const allPlugins: any = [...defaultPlugin, ...plugins]
 	// 存储记录
@@ -164,10 +318,20 @@ function Stage(props: StageProps) {
 		return null
 	}
 	// 重新渲染
-	const reRender = (arr?: []) => {
+	const reRender = (arr?: [], ap?: [number, number]) => {
 		const list = arr || history.current
 		const ctx = innerContainer.current.getContext('2d')
-		ctx.clearRect(0, 0, width, height)
+		const ox = ap ? ap[0] : axisPosition.current[0]
+		const oy = ap ? ap[1] : axisPosition.current[1]
+		ctx.save()
+		ctx.setTransform(1, 0, 0, 1, ox, oy)
+		ctx.clearRect(
+			-(maxWidth - width) / 2,
+			-(maxWidth - height) / 2,
+			maxWidth,
+			maxHeight,
+		)
+		helpAxis(ctx, 0, 0, width, height)
 		for (let i = 0; i < list.length; i++) {
 			const { id, type } = list[i]
 			if (id === currentShapeId.current) {
@@ -177,6 +341,7 @@ function Stage(props: StageProps) {
 			const drawAction = allPlugins.find((item) => item.action === type)
 			drawAction.draw(ctx, list[i])
 		}
+		ctx.restore()
 	}
 	// 渲染轮廓
 	const drawShapeWidthControl = (shape) => {
@@ -261,121 +426,6 @@ function Stage(props: StageProps) {
 		)
 		ctx.closePath()
 	}
-	// 计算位置
-	const genPosition = (ops) => {
-		const { isGrow, disX, disY, top, left, width, height } = ops
-		const disXY = disX * (height / width)
-		let newLeft = left
-		let newTop = top
-		let newWidth = width
-		let newHeight = height
-		if (isGrow) {
-			// 某一方向放大或者缩小
-			switch (isGrow) {
-				case 'topCenter':
-					newTop = top + disY
-					newHeight = height - disY
-					if (newHeight < 0) {
-						// 反向运动
-						newTop = top + height
-						newHeight = Math.abs(newHeight)
-					}
-					break
-				case 'rightTop':
-					newTop = top - disXY
-					newWidth = width + disX
-					newHeight = height + disXY
-					if (newHeight < 0) {
-						// 反向运动
-						newTop = top + height
-						newHeight = Math.abs(newHeight)
-					}
-					if (newWidth < 0) {
-						// 反向运动
-						newLeft = left + newWidth
-						newWidth = Math.abs(newWidth)
-					}
-					break
-				case 'rightCenter':
-					newWidth = width + disX
-					if (newWidth < 0) {
-						// 反向运动
-						newLeft = left + newWidth
-						newWidth = Math.abs(newWidth)
-					}
-					break
-				case 'rightBottom':
-					newWidth = width + disX
-					newHeight = height + disX
-					if (newWidth < 0) {
-						// 反向运动
-						newLeft = left + newWidth
-						newWidth = Math.abs(newWidth)
-					}
-					if (newHeight < 0) {
-						// 反向运动
-						newTop = top + newHeight
-						newHeight = Math.abs(newHeight)
-					}
-					break
-				case 'bottomCenter':
-					newHeight = height + disY
-					if (newHeight < 0) {
-						// 反向运动
-						newTop = top + newHeight
-						newHeight = Math.abs(newHeight)
-					}
-					break
-				case 'leftBottom':
-					newLeft = left + disX
-					newWidth = width - disX
-					newHeight = height - disX
-					if (newHeight < 0) {
-						// 反向运动
-						newTop = top + newHeight
-						newHeight = Math.abs(newHeight)
-					}
-					if (newWidth < 0) {
-						// 反向运动
-						newLeft = left + width
-						newWidth = Math.abs(newWidth)
-					}
-					break
-				case 'leftCenter':
-					newLeft = left + disX
-					newWidth = width - disX
-					if (newWidth < 0) {
-						// 反向运动
-						newLeft = left + width
-						newWidth = Math.abs(newWidth)
-					}
-					break
-				case 'leftTop':
-					newLeft = left + disX
-					newTop = top + disX
-					newWidth = width - disX
-					newHeight = height - disX
-					if (newWidth < 0) {
-						// 反向运动
-						newLeft = left + width
-						newWidth = Math.abs(newWidth)
-					}
-					if (newHeight < 0) {
-						// 反向运动
-						newTop = top + height
-						newHeight = Math.abs(newHeight)
-					}
-					break
-				default:
-					break
-			}
-		} else {
-			// 移动
-			newLeft = left + disX
-			newTop = top + disY
-		}
-		return { newLeft, newTop, newWidth, newHeight }
-	}
 	// 注册清空事件
 	const clear = () => {
 		history.current = []
@@ -388,7 +438,7 @@ function Stage(props: StageProps) {
 	const getData = () => {
 		return history
 	}
-	// 注册缩放事件
+	// 注册放大/缩小事件
 	const scale = (m) => {
 		if (!currentShapeId.current) {
 			return
@@ -421,7 +471,11 @@ function Stage(props: StageProps) {
 	}, [])
 	// 核心事件流
 	useEffect(() => {
-		if (action === 'rect' || action === 'circle') {
+		if (
+			action === 'rect' ||
+			action === 'circle' ||
+			action === 'moveCanvas'
+		) {
 			// 切换为绘图模式时，清空
 			currentShapeId.current = null
 			const ctx = outerContainer.current.getContext('2d')
@@ -570,11 +624,12 @@ function Stage(props: StageProps) {
 					takeUntil(
 						merge($mouseup, $touchend).pipe(
 							tap(() => {
-								if (!shape) {
-									return
-								}
 								// 检测是否是新建动作，更新shape坐标和大小信息
-								if (action === 'rect' || action === 'circle') {
+								if (
+									(action === 'rect' ||
+										action === 'circle') &&
+									shape
+								) {
 									// 更新矩形区域大小，在这更新减少在绘制过程中的计算导致的性能消耗
 									const left = Math.min(
 										shape.left,
@@ -592,8 +647,8 @@ function Stage(props: StageProps) {
 										points[points.length - 1][1] -
 											shape.top,
 									)
-									shape.left = left
-									shape.top = top
+									shape.left = left - axisPosition.current[0]
+									shape.top = top - axisPosition.current[1]
 									shape.width = widthR
 									shape.height = heightR
 									// 清空事件屏
@@ -614,7 +669,11 @@ function Stage(props: StageProps) {
 									}
 								}
 								// 移动
-								if (action === 'move' && points.length > 1) {
+								if (
+									action === 'move' &&
+									points.length > 1 &&
+									shape
+								) {
 									const shapeR = history.current.find(
 										(item) => item.id === shape.id,
 									)
@@ -654,6 +713,27 @@ function Stage(props: StageProps) {
 										onChange(history)
 									}
 								}
+								// 更新坐标系
+								if (action === 'moveCanvas') {
+									const disX =
+										points[points.length - 1][0] -
+										points[0][0]
+									const disY =
+										points[points.length - 1][1] -
+										points[0][1]
+									const cp = getVertex(
+										maxWidth,
+										maxHeight,
+										width,
+										height,
+										axisPosition.current[0] + disX,
+										axisPosition.current[1] + disY,
+									)
+
+									axisPosition.current[0] = cp[0]
+									axisPosition.current[1] = cp[1]
+									reRender()
+								}
 							}),
 						),
 					),
@@ -662,13 +742,13 @@ function Stage(props: StageProps) {
 		)
 		const sub = source.subscribe((context: { shape: any; points: any }) => {
 			const { shape, points = [] } = context
-			if (points.length < 0 || !shape) {
+			if (points.length < 0) {
 				return
 			}
 			// 复制一份数据进行处理
 			const cloneShape = JSON.parse(JSON.stringify(shape))
 			// 检测是否是新建动作
-			if (action === 'rect' || action === 'circle') {
+			if ((action === 'rect' || action === 'circle') && shape) {
 				const ctx = outerContainer.current.getContext('2d')
 				ctx.clearRect(0, 0, width, height)
 				const left = Math.min(shape.left, points[points.length - 1][0])
@@ -685,7 +765,9 @@ function Stage(props: StageProps) {
 				cloneShape.width = widthR
 				cloneShape.height = heightR
 				drawAction.draw(ctx, cloneShape)
-			} else if (action === 'move') {
+			}
+			// 移动
+			if (action === 'move' && shape) {
 				// 计算新的位置
 				const isGrow = hitSpriteGrow(points[0][0], points[0][1])
 				const disX = points[points.length - 1][0] - points[0][0]
@@ -704,6 +786,25 @@ function Stage(props: StageProps) {
 				cloneShape.width = newWidth
 				cloneShape.height = newHeight
 				drawShapeWidthControl(cloneShape)
+			}
+			// 更新坐标系
+			if (action === 'moveCanvas') {
+				const disX = points[points.length - 1][0] - points[0][0]
+				const disY = points[points.length - 1][1] - points[0][1]
+				const axisPositionClone = JSON.parse(
+					JSON.stringify(axisPosition.current),
+				)
+				const cp = getVertex(
+					maxWidth,
+					maxHeight,
+					width,
+					height,
+					axisPositionClone[0] + disX,
+					axisPositionClone[1] + disY,
+				)
+				axisPositionClone[0] = cp[0]
+				axisPositionClone[1] = cp[1]
+				reRender(null, axisPositionClone)
 			}
 		})
 		// 注册滑动手势变化流，放到上面流

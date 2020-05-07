@@ -2,7 +2,7 @@ const plugins = [
 	{
 		action: 'rect',
 		style: {
-			strokeStyle: 'red',
+			strokeStyle: 'blue',
 			lineWidth: 4,
 		},
 		draw: function (ctx, shape) {
