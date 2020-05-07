@@ -180,16 +180,16 @@ function getVertex(maxWidth, maxHeight, width, height, x, y) {
 	return [newX, newY]
 }
 // 辅助线
-function helpAxis(ctx, x, y, width, height) {
+function helpAxis(ctx, x, y, width, height, sizeX, sizeY) {
 	ctx.beginPath()
 	ctx.moveTo(x + width / 2, y)
 	ctx.lineTo(x + width / 2, y + height)
 	ctx.moveTo(x, height / 2 + y)
 	ctx.lineTo(x + width, height / 2 + y)
 	ctx.stroke()
-	ctx.fillRect(x, y, 100, 100)
-	ctx.fillRect(x + 100, y + 100, 100, 100)
-	ctx.fillRect(x - 100, y - 100, 100, 100)
+	ctx.fillRect(x, y, sizeX, sizeY)
+	ctx.fillRect(x + sizeX, y + sizeY, sizeX, sizeY)
+	ctx.fillRect(x - sizeX, y - sizeY, sizeX, sizeY)
 }
 function Stage(props: StageProps) {
 	const {
@@ -327,11 +327,19 @@ function Stage(props: StageProps) {
 		ctx.setTransform(1, 0, 0, 1, ox, oy)
 		ctx.clearRect(
 			-(maxWidth - width) / 2,
-			-(maxWidth - height) / 2,
+			-(maxHeight - height) / 2,
 			maxWidth,
 			maxHeight,
 		)
-		helpAxis(ctx, 0, 0, width, height)
+		helpAxis(
+			ctx,
+			0,
+			0,
+			width,
+			height,
+			(maxWidth - width) / 2,
+			(maxHeight - height) / 2,
+		)
 		for (let i = 0; i < list.length; i++) {
 			const { id, type } = list[i]
 			if (id === currentShapeId.current) {
