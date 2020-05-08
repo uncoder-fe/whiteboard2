@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { merge, fromEvent } from 'rxjs'
-import { tap, map, switchMap, takeUntil, skipWhile, max } from 'rxjs/operators'
+import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators'
 import { StageProps } from './interface'
 
 import styles from './index.less'
