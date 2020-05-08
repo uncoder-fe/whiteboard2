@@ -17,3 +17,5 @@ npm start
 4. 支持辅助线
 
 # 截图
+
+![alt 截图](https://github.com/uncoder-fe/whiteboard2/blob/master/screenshot/6CF3FDAD-2452-4005-9264-6529DCB8D4E5.png "截图")
