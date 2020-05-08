@@ -207,10 +207,9 @@ function Stage(props: StageProps) {
 		plugins = [],
 		initHistory = [],
 		imgUrl,
+		maxWidth = width + 200,
+		maxHeight = height + 200,
 	} = props
-	// 最大画布
-	const maxWidth = 1000
-	const maxHeight = 1000
 	// 原始坐标系，viewport
 	const axisPosition = useRef([0, 0])
 	// 绘制动作组

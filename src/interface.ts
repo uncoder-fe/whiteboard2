@@ -5,6 +5,8 @@ export interface StageProps {
     scale?: number;
     width: number;
     height: number;
+    maxWidth?: number;
+    maxHeight?: number;
     imgUrl?: string;
     style?: object;
     plugins?: any;
