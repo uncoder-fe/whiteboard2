@@ -4,7 +4,7 @@ import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators'
 import { StageProps } from './interface'
 
 import styles from './index.less'
-
+// 预设缩放按钮矩形的大小
 const rectSize = 20
 // 默认插件
 const defaultPlugin = [
@@ -42,8 +42,8 @@ const CURSOR = {
 	default: 'default',
 	move: 'move',
 }
-// 计算位置
-const genPosition = (ops) => {
+// 计算shape位置
+const genShapePosition = (ops) => {
 	const { isGrow, disX, disY, top, left, width, height } = ops
 	const disXY = disX * (height / width)
 	let newLeft = left
@@ -157,7 +157,7 @@ const genPosition = (ops) => {
 	}
 	return { newLeft, newTop, newWidth, newHeight }
 }
-// 顶点坐标
+// 原点坐标计算
 function getVertex(maxWidth, maxHeight, width, height, x, y) {
 	let newX = x
 	let newY = y
@@ -724,7 +724,7 @@ function Stage(props: StageProps) {
 										newTop,
 										newWidth,
 										newHeight,
-									} = genPosition({
+									} = genShapePosition({
 										isGrow,
 										disX,
 										disY,
@@ -802,7 +802,7 @@ function Stage(props: StageProps) {
 			if (action === 'move' && shape) {
 				// 计算新的位置
 				const isGrow = hitSpriteGrow(points[0][0], points[0][1])
-				const { newLeft, newTop, newWidth, newHeight } = genPosition({
+				const { newLeft, newTop, newWidth, newHeight } = genShapePosition({
 					isGrow,
 					disX,
 					disY,
