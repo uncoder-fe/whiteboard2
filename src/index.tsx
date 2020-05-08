@@ -87,7 +87,7 @@ const genPosition = (ops) => {
 				break
 			case 'rightBottom':
 				newWidth = width + disX
-				newHeight = height + disX
+				newHeight = height + disXY
 				if (newWidth < 0) {
 					// 反向运动
 					newLeft = left + newWidth
@@ -110,7 +110,7 @@ const genPosition = (ops) => {
 			case 'leftBottom':
 				newLeft = left + disX
 				newWidth = width - disX
-				newHeight = height - disX
+				newHeight = height - disXY
 				if (newHeight < 0) {
 					// 反向运动
 					newTop = top + newHeight
@@ -133,9 +133,9 @@ const genPosition = (ops) => {
 				break
 			case 'leftTop':
 				newLeft = left + disX
-				newTop = top + disX
+				newTop = top + disXY
 				newWidth = width - disX
-				newHeight = height - disX
+				newHeight = height - disXY
 				if (newWidth < 0) {
 					// 反向运动
 					newLeft = left + width
@@ -466,10 +466,6 @@ function Stage(props: StageProps) {
 			onChange([])
 		}
 	}
-	// 注册主动获取数据
-	const onChangeData = () => {
-		return history
-	}
 	// 注册放大/缩小事件
 	const scale = (m) => {
 		if (!currentShapeId.current) {
@@ -494,7 +490,7 @@ function Stage(props: StageProps) {
 	// 初始化
 	useEffect(() => {
 		if (getRef) {
-			getRef({ clear, onChangeData, scale })
+			getRef({ clear, scale })
 		}
 		if (initHistory.length > 0) {
 			history.current = [...initHistory]
@@ -695,10 +691,6 @@ function Stage(props: StageProps) {
 									]
 									// 绘制到真实区域
 									reRender()
-									// 回调数据结果
-									if (onChange) {
-										onChange(history.current)
-									}
 								}
 								// 移动
 								if (
@@ -740,10 +732,6 @@ function Stage(props: StageProps) {
 									shapeR.height = newHeight
 									// console.log(shape)
 									reRender()
-									// 回调数据结果
-									if (onChange) {
-										onChange(history)
-									}
 								}
 								// 更新坐标系
 								if (action === 'moveCanvas') {
@@ -761,10 +749,13 @@ function Stage(props: StageProps) {
 										axisPosition.current[0] + disX,
 										axisPosition.current[1] + disY,
 									)
-
 									axisPosition.current[0] = cp[0]
 									axisPosition.current[1] = cp[1]
 									reRender()
+								}
+								// 回调数据结果
+								if (onChange) {
+									onChange(history.current)
 								}
 							}),
 						),
@@ -779,6 +770,8 @@ function Stage(props: StageProps) {
 			}
 			// 复制一份数据进行处理
 			const cloneShape = JSON.parse(JSON.stringify(shape))
+			const disX = points[points.length - 1][0] - points[0][0]
+			const disY = points[points.length - 1][1] - points[0][1]
 			// 检测是否是新建动作
 			if ((action === 'rect' || action === 'circle') && shape) {
 				const ctx = outerContainer.current.getContext('2d')
@@ -802,8 +795,6 @@ function Stage(props: StageProps) {
 			if (action === 'move' && shape) {
 				// 计算新的位置
 				const isGrow = hitSpriteGrow(points[0][0], points[0][1])
-				const disX = points[points.length - 1][0] - points[0][0]
-				const disY = points[points.length - 1][1] - points[0][1]
 				const { newLeft, newTop, newWidth, newHeight } = genPosition({
 					isGrow,
 					disX,
@@ -821,8 +812,6 @@ function Stage(props: StageProps) {
 			}
 			// 更新坐标系
 			if (action === 'moveCanvas') {
-				const disX = points[points.length - 1][0] - points[0][0]
-				const disY = points[points.length - 1][1] - points[0][1]
 				const axisPositionClone = JSON.parse(
 					JSON.stringify(axisPosition.current),
 				)

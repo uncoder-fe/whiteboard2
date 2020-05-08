@@ -52,18 +52,13 @@ const App = () => {
 				>
 					shrink
 				</button>
-				<button
-					onClick={() => {
-						const data = cRef.current.onChangeData()
-						console.log(data)
-					}}
-				>
-					onChangeData
-				</button>
 			</div>
 			<Stage
 				getRef={(ref) => {
 					cRef.current = ref
+				}}
+				onChange={(data) => {
+					console.log(data)
 				}}
 				action={action}
 				height={800}
