@@ -223,7 +223,9 @@ function Stage(props: StageProps) {
 	// 当前选中的shape
 	const currentShapeId = useRef(null)
 	// 检测是否命中精灵
-	const hitSprite = (x, y) => {
+	const hitSprite = (ox, oy) => {
+		const x = ox - axisPosition.current[0]
+		const y = oy - axisPosition.current[1]
 		const hitArry = history.current.filter((item) => {
 			const { left, top, width, height } = item
 			if (
@@ -240,7 +242,9 @@ function Stage(props: StageProps) {
 		return hitArry
 	}
 	// 检测命中放大区域
-	const hitSpriteGrow = (x, y) => {
+	const hitSpriteGrow = (ox, oy) => {
+		const x = ox - axisPosition.current[0]
+		const y = oy - axisPosition.current[1]
 		const findShape = history.current.find(
 			(item) => item.id === currentShapeId.current,
 		)
@@ -359,7 +363,21 @@ function Stage(props: StageProps) {
 	// 渲染轮廓
 	const drawShapeWidthControl = (shape) => {
 		const ctx = outerContainer.current.getContext('2d')
-		ctx.clearRect(0, 0, width, height)
+		ctx.save()
+		ctx.setTransform(
+			1,
+			0,
+			0,
+			1,
+			axisPosition.current[0],
+			axisPosition.current[1],
+		)
+		ctx.clearRect(
+			-(maxWidth - width) / 2,
+			-(maxHeight - height) / 2,
+			maxWidth,
+			maxHeight,
+		)
 		// 检测是否是新建动作，更新shape的路径信息
 		const drawAction = allPlugins.find((item) => item.action === shape.type)
 		drawAction.draw(ctx, shape)
@@ -438,6 +456,7 @@ function Stage(props: StageProps) {
 			rectSize,
 		)
 		ctx.closePath()
+		ctx.restore()
 	}
 	// 注册清空事件
 	const clear = () => {
@@ -448,7 +467,7 @@ function Stage(props: StageProps) {
 		}
 	}
 	// 注册主动获取数据
-	const getData = () => {
+	const onChangeData = () => {
 		return history
 	}
 	// 注册放大/缩小事件
@@ -475,7 +494,7 @@ function Stage(props: StageProps) {
 	// 初始化
 	useEffect(() => {
 		if (getRef) {
-			getRef({ clear, getData, scale })
+			getRef({ clear, onChangeData, scale })
 		}
 		if (initHistory.length > 0) {
 			history.current = [...initHistory]
