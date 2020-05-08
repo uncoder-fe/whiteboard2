@@ -196,6 +196,7 @@ function helpAxis(ctx, x, y, width, height, sizeX, sizeY) {
 	ctx.strokeRect(x - sizeX, y - sizeY, sizeX, sizeY)
 	ctx.restore()
 }
+// 主台
 function Stage(props: StageProps) {
 	const {
 		action,
@@ -212,7 +213,7 @@ function Stage(props: StageProps) {
 		helpLine = false,
 	} = props
 	// 原始坐标系，viewport
-	const axisPosition = useRef([0, 0])
+	const axisOrigin = useRef([0, 0])
 	// 绘制动作组
 	const allPlugins: any = [...defaultPlugin, ...plugins]
 	// 存储记录
@@ -224,8 +225,8 @@ function Stage(props: StageProps) {
 	const currentShapeId = useRef(null)
 	// 检测是否命中精灵
 	const hitSprite = (ox, oy) => {
-		const x = ox - axisPosition.current[0]
-		const y = oy - axisPosition.current[1]
+		const x = ox - axisOrigin.current[0]
+		const y = oy - axisOrigin.current[1]
 		const hitArry = history.current.filter((item) => {
 			const { left, top, width, height } = item
 			if (
@@ -243,8 +244,8 @@ function Stage(props: StageProps) {
 	}
 	// 检测命中放大区域
 	const hitSpriteGrow = (ox, oy) => {
-		const x = ox - axisPosition.current[0]
-		const y = oy - axisPosition.current[1]
+		const x = ox - axisOrigin.current[0]
+		const y = oy - axisOrigin.current[1]
 		const findShape = history.current.find(
 			(item) => item.id === currentShapeId.current,
 		)
@@ -330,8 +331,8 @@ function Stage(props: StageProps) {
 	const reRender = (arr?: [], ap?: [number, number]) => {
 		const list = arr || history.current
 		const ctx = innerContainer.current.getContext('2d')
-		const ox = ap ? ap[0] : axisPosition.current[0]
-		const oy = ap ? ap[1] : axisPosition.current[1]
+		const ox = ap ? ap[0] : axisOrigin.current[0]
+		const oy = ap ? ap[1] : axisOrigin.current[1]
 		ctx.save()
 		ctx.setTransform(1, 0, 0, 1, ox, oy)
 		ctx.clearRect(
@@ -371,8 +372,8 @@ function Stage(props: StageProps) {
 			0,
 			0,
 			1,
-			axisPosition.current[0],
-			axisPosition.current[1],
+			axisOrigin.current[0],
+			axisOrigin.current[1],
 		)
 		ctx.clearRect(
 			-(maxWidth - width) / 2,
@@ -681,8 +682,8 @@ function Stage(props: StageProps) {
 										points[points.length - 1][1] -
 											shape.top,
 									)
-									shape.left = left - axisPosition.current[0]
-									shape.top = top - axisPosition.current[1]
+									shape.left = left - axisOrigin.current[0]
+									shape.top = top - axisOrigin.current[1]
 									shape.width = widthR
 									shape.height = heightR
 									// 清空事件屏
@@ -752,11 +753,11 @@ function Stage(props: StageProps) {
 										maxHeight,
 										width,
 										height,
-										axisPosition.current[0] + disX,
-										axisPosition.current[1] + disY,
+										axisOrigin.current[0] + disX,
+										axisOrigin.current[1] + disY,
 									)
-									axisPosition.current[0] = cp[0]
-									axisPosition.current[1] = cp[1]
+									axisOrigin.current[0] = cp[0]
+									axisOrigin.current[1] = cp[1]
 									reRender()
 								}
 								// 回调数据结果
@@ -818,20 +819,20 @@ function Stage(props: StageProps) {
 			}
 			// 更新坐标系
 			if (action === 'moveCanvas') {
-				const axisPositionClone = JSON.parse(
-					JSON.stringify(axisPosition.current),
+				const axisOriginClone = JSON.parse(
+					JSON.stringify(axisOrigin.current),
 				)
 				const cp = getVertex(
 					maxWidth,
 					maxHeight,
 					width,
 					height,
-					axisPositionClone[0] + disX,
-					axisPositionClone[1] + disY,
+					axisOriginClone[0] + disX,
+					axisOriginClone[1] + disY,
 				)
-				axisPositionClone[0] = cp[0]
-				axisPositionClone[1] = cp[1]
-				reRender(null, axisPositionClone)
+				axisOriginClone[0] = cp[0]
+				axisOriginClone[1] = cp[1]
+				reRender(null, axisOriginClone)
 			}
 		})
 		// 注册滑动手势变化流，放到上面流
