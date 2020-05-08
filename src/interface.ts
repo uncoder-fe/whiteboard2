@@ -21,6 +21,7 @@ export interface StageProps {
             strokeWidth: number;
         };
     };
+    helpLine?: boolean;
 }
 // definition.d.ts
 declare module '*.png';

@@ -209,6 +209,7 @@ function Stage(props: StageProps) {
 		imgUrl,
 		maxWidth = width + 200,
 		maxHeight = height + 200,
+		helpLine = false,
 	} = props
 	// 原始坐标系，viewport
 	const axisPosition = useRef([0, 0])
@@ -339,15 +340,17 @@ function Stage(props: StageProps) {
 			maxWidth,
 			maxHeight,
 		)
-		helpAxis(
-			ctx,
-			0,
-			0,
-			width,
-			height,
-			(maxWidth - width) / 2,
-			(maxHeight - height) / 2,
-		)
+		if (helpLine) {
+			helpAxis(
+				ctx,
+				0,
+				0,
+				width,
+				height,
+				(maxWidth - width) / 2,
+				(maxHeight - height) / 2,
+			)
+		}
 		for (let i = 0; i < list.length; i++) {
 			const { id, type } = list[i]
 			if (id === currentShapeId.current) {

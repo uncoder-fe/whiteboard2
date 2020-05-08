@@ -65,6 +65,7 @@ const App = () => {
 				width={800}
 				plugins={plugins}
 				imgUrl="http://placekitten.com/800/800"
+				helpLine
 			/>
 			<div>
 				<img src={icon} alt="" id="image" style={{ display: 'none' }} />
