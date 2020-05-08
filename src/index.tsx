@@ -486,6 +486,10 @@ function Stage(props: StageProps) {
 		shape.height = heightR
 		drawShapeWidthControl(shape)
 		reRender()
+		// 回调数据结果
+		if (onChange) {
+			onChange(history.current)
+		}
 	}
 	// 初始化
 	useEffect(() => {
