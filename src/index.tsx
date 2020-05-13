@@ -166,7 +166,7 @@ const genShapePosition = (ops) => {
 					newScaleX = scaleX + increaseX
 					newScaleY = newScaleX
 					newLeft = left + disX
-				} else if (disX > 0 && disX < width) {
+				} else if (disX > 0 && disX < width * scaleX) {
 					// 减少
 					newScaleX = Math.abs(scaleX - increaseX)
 					newScaleY = newScaleX
@@ -176,6 +176,7 @@ const genShapePosition = (ops) => {
 					newScaleX = Math.abs(disX - width * scaleX) / width
 					newScaleY = newScaleX
 					newLeft = left + width * scaleX
+					console.log(newLeft)
 					newTop = Math.abs(top - height * newScaleX)
 					newFlipX = !newFlipX
 					newFlipY = !newFlipY
@@ -193,7 +194,7 @@ const genShapePosition = (ops) => {
 				} else if (disX > 0) {
 					// 当前系数增量
 					newScaleX = Math.abs(disX - width * scaleX) / width
-					// 减少致反向运动
+					// 反向
 					newLeft = left + width * scaleX
 					newFlipX = !newFlipX
 				}
@@ -205,7 +206,7 @@ const genShapePosition = (ops) => {
 					newScaleY = newScaleX
 					newLeft = left - Math.abs(disX)
 					newTop = top - Math.abs(disXtoY)
-				} else if (disX > 0 && disX < width) {
+				} else if (disX > 0 && disX < width * scaleX) {
 					// 减少
 					newScaleX = scaleX - increaseX
 					newScaleY = newScaleX
