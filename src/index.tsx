@@ -176,7 +176,7 @@ const genShapePosition = (ops) => {
 					newScaleX = Math.abs(disX - width * scaleX) / width
 					newScaleY = newScaleX
 					newLeft = left + width * scaleX
-					newTop = top - Math.abs(disXtoY - height * scaleY)
+					newTop = Math.abs(top - height * newScaleX)
 					newFlipX = !newFlipX
 					newFlipY = !newFlipY
 				}
