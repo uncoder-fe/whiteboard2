@@ -6,15 +6,36 @@ const plugins = [
 			lineWidth: 4,
 		},
 		draw: function (ctx, shape) {
-			const { left, top, width, height } = shape
-			// 这里不需要使用ctx.beginPath()，潜规则？clearRect依然可以生效
+			// console.log(shape)
+			const {
+				left,
+				top,
+				width,
+				height,
+				scaleX,
+				scaleY,
+				flipX,
+				flipY,
+			} = shape
 			ctx.save()
+			ctx.transform(flipX ? -1 : 1, 0, 0, flipY ? -1 : 1, 0, 0)
 			for (const i in this.style) {
 				ctx[i] = this.style[i]
 			}
-			ctx.strokeRect(left, top, width, height)
+			ctx.strokeRect(
+				flipX ? -(left + width * scaleX) : left,
+				flipY ? -(top + height * scaleY) : top,
+				width * scaleX,
+				height * scaleY,
+			)
 			const image = document.querySelector('#image')
-			ctx.drawImage(image, left, top, width, height)
+			ctx.drawImage(
+				image,
+				flipX ? -(left + width * scaleX) : left,
+				flipY ? -(top + height * scaleY) : top,
+				width * scaleX,
+				height * scaleY,
+			)
 			ctx.restore()
 		},
 	},
@@ -43,20 +64,38 @@ const plugins = [
 			fill: 'none',
 		},
 		draw: function (ctx, shape) {
-			const { left, top, width, height } = shape
-			const centerX = left + width / 2
-			const centerY = top + height / 2
+			const {
+				left,
+				top,
+				width,
+				height,
+				scaleX,
+				scaleY,
+				flipX,
+				flipY,
+			} = shape
+			const centerX = left + (width * scaleX) / 2
+			const centerY = top + (height * scaleY) / 2
 			// const radius =
 			// 	Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2)) / 2
-			const radiusX = width / 2
-			const radiusY = height / 2
+			const radiusX = (width * scaleX) / 2
+			const radiusY = (height * scaleY) / 2
+			ctx.beginPath()
 			ctx.save()
+			ctx.transform(flipX ? -1 : 1, 0, 0, flipY ? -1 : 1, 0, 0)
 			for (const i in this.style) {
 				ctx[i] = this.style[i]
 			}
-			ctx.beginPath()
 			// ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI)
-			ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2)
+			ctx.ellipse(
+				flipX ? -centerX : centerX,
+				flipY ? -centerY : centerY,
+				radiusX,
+				radiusY,
+				0,
+				0,
+				Math.PI * 2,
+			)
 			ctx.stroke()
 			ctx.restore()
 		},

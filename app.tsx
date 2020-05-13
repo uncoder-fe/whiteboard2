@@ -5,7 +5,7 @@ import plugins from './src/plugins'
 import icon from './default.jpeg'
 
 const App = () => {
-	const [action, setAction] = useState('moveCanvas')
+	const [action, setAction] = useState('rect')
 	const cRef = useRef(null)
 	return (
 		<div>
