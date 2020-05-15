@@ -57,7 +57,6 @@ const genShapePosition = (ops) => {
 		flipX,
 		flipY,
 	} = ops
-	const disXtoY = disX * (height / width)
 	let newLeft = left
 	let newTop = top
 	let newScaleX = scaleX
@@ -68,21 +67,21 @@ const genShapePosition = (ops) => {
 	let increaseY = 0
 	if (isGrow && (disX !== 0 || disY !== 0)) {
 		// 某一方向放大或者缩小
-		increaseX = Number((Math.abs(disX) / width).toFixed(3))
-		increaseY = Number((Math.abs(disY) / height).toFixed(3))
+		increaseX = parseFloat((Math.abs(disX) / width).toFixed(4))
+		increaseY = parseFloat((Math.abs(disY) / height).toFixed(4))
 		switch (isGrow) {
 			case 'topCenter':
 				if (disY < 0) {
 					// 增加
 					newScaleY = scaleY + increaseY
-					newTop = top + disY
+					newTop = top - height * increaseY
 				} else if (disY > 0 && disY < height * scaleY) {
 					// 减少
 					newScaleY = scaleY - increaseY
-					newTop = top + disY
+					newTop = top + height * increaseY
 				} else if (disY > 0) {
 					// 反向
-					newScaleY = Math.abs(disY - height * scaleY) / height
+					newScaleY = increaseY - scaleY
 					newTop = top + height * scaleY
 					newFlipY = !newFlipY
 				}
@@ -91,19 +90,18 @@ const genShapePosition = (ops) => {
 				if (disX > 0) {
 					// 增加
 					newScaleX = scaleX + increaseX
-					newScaleY = scaleY + increaseX * scaleY
-					newTop = top - disXtoY
+					newScaleY = scaleY + scaleY * increaseX
+					newTop = top - height * increaseX * scaleY
 				} else if (disX < 0 && disX > -width * scaleX) {
 					// 减小
-					newScaleX = scaleX - increaseX
-					newScaleY = scaleY - increaseX * scaleY
-					newTop = top + height * increaseX
+					newScaleX = Math.abs(scaleX - increaseX)
+					newScaleY = scaleY - scaleY * increaseX
+					newTop = top + height * increaseX * scaleY
 				} else if (disX < 0) {
 					// 反向
-					newScaleX =
-						Math.abs(Math.abs(disX) - width * scaleX) / width
-					newScaleY = newScaleX
-					newLeft = left - (Math.abs(disX) - width * scaleX)
+					newScaleX = increaseX - scaleX
+					newScaleY = (scaleY / scaleX) * newScaleX
+					newLeft = left - width * newScaleX
 					newTop = top + height * scaleY
 					newFlipX = !newFlipX
 					newFlipY = !newFlipY
@@ -116,12 +114,11 @@ const genShapePosition = (ops) => {
 					newScaleX = scaleX + increaseX
 				} else if (disX < 0 && disX > -(width * scaleX)) {
 					// 减少
-					newScaleX = scaleX - increaseX
+					newScaleX = Math.abs(scaleX - increaseX)
 				} else if (disX < 0) {
 					// 反向
-					newScaleX =
-						Math.abs(Math.abs(disX) - width * scaleX) / width
-					newLeft = left - (Math.abs(disX) - width * scaleX)
+					newScaleX = increaseX - scaleX
+					newLeft = left - width * newScaleX
 					newFlipX = !newFlipX
 				}
 				break
@@ -129,18 +126,17 @@ const genShapePosition = (ops) => {
 				if (disX > 0) {
 					// 增加
 					newScaleX = scaleX + increaseX
-					newScaleY = scaleY + scaleY * increaseX
+					newScaleY = scaleY + (scaleY / scaleX) * increaseX
 				} else if (disX < 0 && disX > -width * scaleX) {
 					// 减小
-					newScaleX = scaleX - increaseX
-					newScaleY = scaleY - scaleY * increaseX
+					newScaleX = Math.abs(scaleX - increaseX)
+					newScaleY = scaleY - (scaleY / scaleX) * increaseX
 				} else if (disX < 0) {
 					// 反向
-					newScaleX =
-						Math.abs(Math.abs(disX) - width * scaleX) / width
+					newScaleX = increaseX - scaleX
 					newScaleY = newScaleX
-					newLeft = left - (Math.abs(disX) - width * scaleX)
-					newTop = top - (Math.abs(disXtoY) - height * scaleY)
+					newLeft = left - width * newScaleX
+					newTop = top - height * newScaleY
 					newFlipX = !newFlipX
 					newFlipY = !newFlipY
 				}
@@ -154,9 +150,8 @@ const genShapePosition = (ops) => {
 					newScaleY = scaleY - increaseY
 				} else if (disY < 0) {
 					// 反向
-					newScaleY =
-						Math.abs(Math.abs(disY) - height * scaleY) / height
-					newTop = top - (Math.abs(disY) - height * scaleY)
+					newScaleY = increaseY - scaleY
+					newTop = top - height * newScaleY
 					newFlipY = !newFlipY
 				}
 				break
@@ -164,19 +159,19 @@ const genShapePosition = (ops) => {
 				if (disX < 0) {
 					// 增加
 					newScaleX = scaleX + increaseX
-					newScaleY = scaleY + scaleY * increaseX
-					newLeft = left + disX
+					newScaleY = scaleY + (scaleY / scaleX) * increaseX
+					newLeft = left - width * increaseX
 				} else if (disX > 0 && disX < width * scaleX) {
 					// 减少
 					newScaleX = Math.abs(scaleX - increaseX)
-					newScaleY = scaleY - scaleY * increaseX
-					newLeft = left + disX
+					newScaleY = scaleY - (scaleY / scaleX) * increaseX
+					newLeft = left + width * increaseX
 				} else if (disX > 0) {
 					// 反向
-					newScaleX = Math.abs(disX - width * scaleX) / width
-					newScaleY = newScaleX
+					newScaleX = increaseX - scaleX
+					newScaleY = (scaleY / scaleX) * newScaleX
 					newLeft = left + width * scaleX
-					newTop = Math.abs(top - height * newScaleX)
+					newTop = Math.abs(top - height * newScaleY)
 					newFlipX = !newFlipX
 					newFlipY = !newFlipY
 				}
@@ -185,15 +180,14 @@ const genShapePosition = (ops) => {
 				if (disX < 0) {
 					// 增加
 					newScaleX = scaleX + increaseX
-					newLeft = left + disX
+					newLeft = left - width * increaseX
 				} else if (disX > 0 && disX < width * scaleX) {
 					// 减少
 					newScaleX = Math.abs(scaleX - increaseX)
-					newLeft = left + disX
+					newLeft = left + width * increaseX
 				} else if (disX > 0) {
-					// 当前系数增量
-					newScaleX = Math.abs(disX - width * scaleX) / width
 					// 反向
+					newScaleX = increaseX - scaleX
 					newLeft = left + width * scaleX
 					newFlipX = !newFlipX
 				}
@@ -202,19 +196,19 @@ const genShapePosition = (ops) => {
 				if (disX < 0) {
 					// 增加
 					newScaleX = scaleX + increaseX
-					newScaleY = newScaleX
-					newLeft = left - Math.abs(disX)
-					newTop = top - Math.abs(disXtoY)
+					newScaleY = scaleY + (scaleY / scaleX) * increaseX
+					newLeft = left - width * increaseX
+					newTop = top - height * (scaleY / scaleX) * increaseX
 				} else if (disX > 0 && disX < width * scaleX) {
 					// 减少
-					newScaleX = scaleX - increaseX
-					newScaleY = newScaleX
-					newLeft = left + disX
-					newTop = top + disXtoY
+					newScaleX = scaleX - scaleX * increaseX
+					newScaleY = scaleY - (scaleX / scaleY) * increaseX
+					newLeft = left + width * scaleX * increaseX
+					newTop = top + height * (scaleX / scaleY) * increaseX
 				} else if (disX > 0) {
 					// 反向
-					newScaleX = (disX - width * scaleX) / width
-					newScaleY = newScaleX
+					newScaleX = increaseX - scaleX
+					newScaleY = (scaleY / scaleX) * newScaleX
 					newLeft = left + width * scaleX
 					newTop = top + height * scaleY
 					newFlipX = !newFlipX
