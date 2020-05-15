@@ -202,9 +202,9 @@ const genShapePosition = (ops) => {
 				} else if (disX > 0 && disX < width * scaleX) {
 					// 减少
 					newScaleX = scaleX - scaleX * increaseX
-					newScaleY = scaleY - (scaleX / scaleY) * increaseX
+					newScaleY = scaleY - (scaleY / scaleX) * increaseX
 					newLeft = left + width * scaleX * increaseX
-					newTop = top + height * (scaleX / scaleY) * increaseX
+					newTop = top + height * (scaleY / scaleX) * increaseX
 				} else if (disX > 0) {
 					// 反向
 					newScaleX = increaseX - scaleX
