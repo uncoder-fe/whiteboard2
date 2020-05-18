@@ -306,17 +306,24 @@ function Stage(props: StageProps) {
 		}
 		const ctx = outerContainer.current.getContext('2d')
 		ctx.clearRect(0, 0, width, height)
-		const scaleFactor = m === 'enlarge' ? 1.2 : 0.8
+		const scaleFactor = 0.25
 		const shape = history.current.find(
 			(item) => item.id === currentShapeId.current,
 		)
-		// 缩放
-		const widthR = shape.width * scaleFactor
-		const heightR = shape.height * scaleFactor
-		shape.left = shape.left + (shape.width - widthR) / 2
-		shape.top = shape.top + (shape.height - heightR) / 2
-		shape.width = widthR
-		shape.height = heightR
+		shape.scaleX = shape.scaleX + (m === 'enlarge' ? 1 : -1) * scaleFactor
+		shape.scaleY =
+			shape.scaleY +
+			(m === 'enlarge' ? 1 : -1) *
+				scaleFactor *
+				(shape.scaleY / shape.scaleX)
+		shape.left =
+			shape.left +
+			((m === 'enlarge' ? -1 : 1) * (scaleFactor * shape.width)) / 2
+		shape.top =
+			shape.top +
+			((m === 'enlarge' ? -1 : 1) *
+				(scaleFactor * (shape.scaleY / shape.scaleX) * shape.height)) /
+				2
 		drawShapeWidthControl(shape)
 		reRender()
 		// 回调数据结果
