@@ -1,4 +1,3 @@
-
 // 默认插件
 export const defaultPlugin = [
 	{
@@ -114,7 +113,7 @@ export const genShapePosition = (ops) => {
 				} else if (disX < 0) {
 					// 反向
 					newScaleX = increaseX - scaleX
-					newScaleY = newScaleX
+					newScaleY = (scaleY / scaleX) * newScaleX
 					newLeft = left - width * newScaleX
 					newTop = top - height * newScaleY
 					newFlipX = !newFlipX
