@@ -286,6 +286,8 @@ function Stage(props: StageProps) {
 	const allPlugins: any = [...defaultPlugin, ...plugins]
 	// 存储记录
 	const history = useRef([])
+	// 底图
+	const backgroundImage = useRef(null)
 	// canvas容器
 	const outerContainer = useRef(null)
 	const innerContainer = useRef(null)
@@ -409,6 +411,16 @@ function Stage(props: StageProps) {
 			maxWidth,
 			maxHeight,
 		)
+		if (imgUrl && backgroundImage.current) {
+			// 底图
+			ctx.drawImage(
+				backgroundImage.current,
+				-(maxWidth - width) / 2,
+				-(maxHeight - height) / 2,
+				maxWidth,
+				maxHeight,
+			)
+		}
 		if (helpLine) {
 			helpAxis(
 				ctx,
@@ -965,7 +977,12 @@ function Stage(props: StageProps) {
 			className={styles.stage}
 			style={{ height, width, background: 'transparent', ...style }}
 		>
-			<img src={imgUrl} alt="底图" />
+			<img
+				src={imgUrl}
+				alt="底图"
+				ref={backgroundImage}
+				style={{ visiable: 'hidden' }}
+			/>
 			<canvas ref={innerContainer} height={height} width={width} />
 			<canvas ref={outerContainer} height={height} width={width} />
 		</div>
