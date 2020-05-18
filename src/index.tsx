@@ -1,269 +1,12 @@
 import React, { useEffect, useRef } from 'react'
 import { merge, fromEvent } from 'rxjs'
 import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators'
+import { RECTSIZE, CURSOR } from './common'
+import { defaultPlugin, genShapePosition, getVertex, helpAxis } from './util'
 import { StageProps } from './interface'
 
 import styles from './index.less'
-// 预设缩放按钮矩形的大小
-const rectSize = 20
-// 默认插件
-const defaultPlugin = [
-	{
-		action: 'hand',
-	},
-	{
-		action: 'move',
-	},
-	{
-		action: 'pencil',
-		style: {
-			strokeStyle: 'blue',
-			lineWidth: 10,
-		},
-		draw: function (ctx, points) {
-			ctx.beginPath()
-			ctx.moveTo()
-			ctx.stroke()
-			// ctx.fill()
-			ctx.restore()
-		},
-	},
-]
-// 鼠标形状
-const CURSOR = {
-	topCenter: 'n-resize', // 上中(1)
-	rightTop: 'ne-resize', // 右上(2)
-	rightCenter: 'e-resize', // 右中(3)
-	rightBottom: 'se-resize', // 右下(4)
-	bottomCenter: 's-resize', // 下中(5)
-	leftBottom: 'sw-resize', // 左下(6)
-	leftCenter: 'w-resize', // 左中(7)
-	leftTop: 'nw-resize', // 左上(8)
-	default: 'default',
-	move: 'move',
-}
-// 计算shape位置
-const genShapePosition = (ops) => {
-	let {
-		isGrow,
-		disX,
-		disY,
-		left,
-		top,
-		width,
-		height,
-		scaleX,
-		scaleY,
-		flipX,
-		flipY,
-	} = ops
-	let newLeft = left
-	let newTop = top
-	let newScaleX = scaleX
-	let newScaleY = scaleY
-	let newFlipX = flipX
-	let newFlipY = flipY
-	let increaseX = 0
-	let increaseY = 0
-	if (isGrow && (disX !== 0 || disY !== 0)) {
-		// 某一方向放大或者缩小
-		increaseX = parseFloat((Math.abs(disX) / width).toFixed(4))
-		increaseY = parseFloat((Math.abs(disY) / height).toFixed(4))
-		switch (isGrow) {
-			case 'topCenter':
-				if (disY < 0) {
-					// 增加
-					newScaleY = scaleY + increaseY
-					newTop = top - height * increaseY
-				} else if (disY > 0 && disY < height * scaleY) {
-					// 减少
-					newScaleY = scaleY - increaseY
-					newTop = top + height * increaseY
-				} else if (disY > 0) {
-					// 反向
-					newScaleY = increaseY - scaleY
-					newTop = top + height * scaleY
-					newFlipY = !newFlipY
-				}
-				break
-			case 'rightTop':
-				if (disX > 0) {
-					// 增加
-					newScaleX = scaleX + increaseX
-					newScaleY = scaleY + (scaleY / scaleX) * increaseX
-					newTop = top - height * (scaleY / scaleX) * increaseX
-				} else if (disX < 0 && disX > -width * scaleX) {
-					// 减小
-					newScaleX = Math.abs(scaleX - increaseX)
-					newScaleY = scaleY - (scaleY / scaleX) * increaseX
-					newTop = top + height * (scaleY / scaleX) * increaseX
-				} else if (disX < 0) {
-					// 反向
-					newScaleX = increaseX - scaleX
-					newScaleY = (scaleY / scaleX) * newScaleX
-					newLeft = left - width * newScaleX
-					newTop = top + height * scaleY
-					newFlipX = !newFlipX
-					newFlipY = !newFlipY
-				}
-				break
-			case 'rightCenter':
-				// 计算变化
-				if (disX > 0) {
-					// 增加
-					newScaleX = scaleX + increaseX
-				} else if (disX < 0 && disX > -(width * scaleX)) {
-					// 减少
-					newScaleX = Math.abs(scaleX - increaseX)
-				} else if (disX < 0) {
-					// 反向
-					newScaleX = increaseX - scaleX
-					newLeft = left - width * newScaleX
-					newFlipX = !newFlipX
-				}
-				break
-			case 'rightBottom':
-				if (disX > 0) {
-					// 增加
-					newScaleX = scaleX + increaseX
-					newScaleY = scaleY + (scaleY / scaleX) * increaseX
-				} else if (disX < 0 && disX > -width * scaleX) {
-					// 减小
-					newScaleX = Math.abs(scaleX - increaseX)
-					newScaleY = scaleY - (scaleY / scaleX) * increaseX
-				} else if (disX < 0) {
-					// 反向
-					newScaleX = increaseX - scaleX
-					newScaleY = newScaleX
-					newLeft = left - width * newScaleX
-					newTop = top - height * newScaleY
-					newFlipX = !newFlipX
-					newFlipY = !newFlipY
-				}
-				break
-			case 'bottomCenter':
-				if (disY > 0) {
-					// 增加
-					newScaleY = scaleY + increaseY
-				} else if (disY < 0 && disY > -height * scaleY) {
-					// 减小
-					newScaleY = scaleY - increaseY
-				} else if (disY < 0) {
-					// 反向
-					newScaleY = increaseY - scaleY
-					newTop = top - height * newScaleY
-					newFlipY = !newFlipY
-				}
-				break
-			case 'leftBottom':
-				if (disX < 0) {
-					// 增加
-					newScaleX = scaleX + increaseX
-					newScaleY = scaleY + (scaleY / scaleX) * increaseX
-					newLeft = left - width * increaseX
-				} else if (disX > 0 && disX < width * scaleX) {
-					// 减少
-					newScaleX = Math.abs(scaleX - increaseX)
-					newScaleY = scaleY - (scaleY / scaleX) * increaseX
-					newLeft = left + width * increaseX
-				} else if (disX > 0) {
-					// 反向
-					newScaleX = increaseX - scaleX
-					newScaleY = (scaleY / scaleX) * newScaleX
-					newLeft = left + width * scaleX
-					newTop = Math.abs(top - height * newScaleY)
-					newFlipX = !newFlipX
-					newFlipY = !newFlipY
-				}
-				break
-			case 'leftCenter':
-				if (disX < 0) {
-					// 增加
-					newScaleX = scaleX + increaseX
-					newLeft = left - width * increaseX
-				} else if (disX > 0 && disX < width * scaleX) {
-					// 减少
-					newScaleX = Math.abs(scaleX - increaseX)
-					newLeft = left + width * increaseX
-				} else if (disX > 0) {
-					// 反向
-					newScaleX = increaseX - scaleX
-					newLeft = left + width * scaleX
-					newFlipX = !newFlipX
-				}
-				break
-			case 'leftTop':
-				if (disX < 0) {
-					// 增加
-					newScaleX = scaleX + increaseX
-					newScaleY = scaleY + (scaleY / scaleX) * increaseX
-					newLeft = left - width * increaseX
-					newTop = top - height * (scaleY / scaleX) * increaseX
-				} else if (disX > 0 && disX < width * scaleX) {
-					// 减少
-					newScaleX = scaleX - increaseX
-					newScaleY = scaleY - (scaleY / scaleX) * increaseX
-					newLeft = left + width * increaseX
-					newTop = top + height * (scaleY / scaleX) * increaseX
-				} else if (disX > 0) {
-					// 反向
-					newScaleX = increaseX - scaleX
-					newScaleY = (scaleY / scaleX) * newScaleX
-					newLeft = left + width * scaleX
-					newTop = top + height * scaleY
-					newFlipX = !newFlipX
-					newFlipY = !newFlipY
-				}
-				break
-			default:
-				break
-		}
-	} else {
-		// 移动
-		newLeft = left + disX
-		newTop = top + disY
-	}
-	return { newLeft, newTop, newScaleX, newScaleY, newFlipX, newFlipY }
-}
-// 原点坐标计算
-function getVertex(maxWidth, maxHeight, width, height, x, y) {
-	let newX = x
-	let newY = y
-	const minX = -(maxWidth - width) / 2
-	const minY = -(maxHeight - height) / 2
-	const maxX = maxWidth - width - (maxWidth - width) / 2
-	const maxY = maxHeight - height - (maxHeight - height) / 2
-	if (x > maxX) {
-		newX = maxX
-	}
-	if (x < minX) {
-		newX = minX
-	}
-	if (y > maxY) {
-		newY = maxY
-	}
-	if (y < minY) {
-		newY = minY
-	}
-	return [newX, newY]
-}
-// 辅助线
-function helpAxis(ctx, x, y, width, height, sizeX, sizeY) {
-	ctx.save()
-	ctx.setLineDash([2, 6])
-	ctx.strokeStyle = 'yellow'
-	ctx.lineWidth = 4
-	ctx.beginPath()
-	ctx.moveTo(x + width / 2, y)
-	ctx.lineTo(x + width / 2, y + height)
-	ctx.moveTo(x, height / 2 + y)
-	ctx.lineTo(x + width, height / 2 + y)
-	ctx.stroke()
-	ctx.strokeRect(x, y, sizeX, sizeY)
-	ctx.strokeRect(x + sizeX, y + sizeY, sizeX, sizeY)
-	ctx.strokeRect(x - sizeX, y - sizeY, sizeX, sizeY)
-	ctx.restore()
-}
+
 // 主台
 function Stage(props: StageProps) {
 	const {
@@ -300,12 +43,12 @@ function Stage(props: StageProps) {
 		const hitArry = history.current.filter((item) => {
 			const { left, top, width, height, scaleX, scaleY } = item
 			if (
-				left - rectSize < x &&
-				x < left + width * scaleX + rectSize * 2 &&
-				top - rectSize < y &&
-				y < top + height * scaleY + rectSize * 2
+				left - RECTSIZE < x &&
+				x < left + width * scaleX + RECTSIZE * 2 &&
+				top - RECTSIZE < y &&
+				y < top + height * scaleY + RECTSIZE * 2
 			) {
-				// 当是框的时候，检测区域增加rectSize的大小，因为要计算拖拽的圆圈
+				// 当是框的时候，检测区域增加RECTSIZE的大小，因为要计算拖拽的圆圈
 				return true
 			}
 			return false
@@ -324,73 +67,73 @@ function Stage(props: StageProps) {
 		}
 		const { left, top, width, height, scaleX, scaleY } = findShape
 		if (
-			left + (width * scaleX) / 2 - rectSize / 2 < x &&
-			x < left + (width * scaleX) / 2 + rectSize / 2 &&
-			top - rectSize / 2 < y &&
-			y < top + rectSize / 2
+			left + (width * scaleX) / 2 - RECTSIZE / 2 < x &&
+			x < left + (width * scaleX) / 2 + RECTSIZE / 2 &&
+			top - RECTSIZE / 2 < y &&
+			y < top + RECTSIZE / 2
 		) {
 			// 上中(1)
 			return 'topCenter'
 		}
 		if (
-			left + width * scaleX - rectSize / 2 < x &&
-			x < left + width * scaleX + rectSize / 2 &&
-			top - rectSize / 2 < y &&
-			y < top + rectSize / 2
+			left + width * scaleX - RECTSIZE / 2 < x &&
+			x < left + width * scaleX + RECTSIZE / 2 &&
+			top - RECTSIZE / 2 < y &&
+			y < top + RECTSIZE / 2
 		) {
 			// 右上(2)
 			return 'rightTop'
 		}
 		if (
-			left + width * scaleX - rectSize / 2 < x &&
-			x < left + width * scaleX + rectSize / 2 &&
-			top + (height * scaleY) / 2 - rectSize / 2 < y &&
-			y < top + (height * scaleY) / 2 + rectSize / 2
+			left + width * scaleX - RECTSIZE / 2 < x &&
+			x < left + width * scaleX + RECTSIZE / 2 &&
+			top + (height * scaleY) / 2 - RECTSIZE / 2 < y &&
+			y < top + (height * scaleY) / 2 + RECTSIZE / 2
 		) {
 			// 右中(3)
 			return 'rightCenter'
 		}
 		if (
-			left + width * scaleX - rectSize / 2 < x &&
-			x < left + width * scaleX + rectSize / 2 &&
-			top + height * scaleY - rectSize / 2 < y &&
-			y < top + height * scaleY + rectSize / 2
+			left + width * scaleX - RECTSIZE / 2 < x &&
+			x < left + width * scaleX + RECTSIZE / 2 &&
+			top + height * scaleY - RECTSIZE / 2 < y &&
+			y < top + height * scaleY + RECTSIZE / 2
 		) {
 			// 右下(4)
 			return 'rightBottom'
 		}
 		if (
-			left + (width * scaleX) / 2 - rectSize / 2 < x &&
-			x < left + (width * scaleX) / 2 + rectSize / 2 &&
-			top + height * scaleY - rectSize / 2 < y &&
-			y < top + height * scaleY + rectSize / 2
+			left + (width * scaleX) / 2 - RECTSIZE / 2 < x &&
+			x < left + (width * scaleX) / 2 + RECTSIZE / 2 &&
+			top + height * scaleY - RECTSIZE / 2 < y &&
+			y < top + height * scaleY + RECTSIZE / 2
 		) {
 			// 下中(5)
 			return 'bottomCenter'
 		}
 		if (
-			left - rectSize / 2 < x &&
-			x < left + rectSize / 2 &&
-			top + height * scaleY - rectSize / 2 < y &&
-			y < top + height * scaleY + rectSize / 2
+			left - RECTSIZE / 2 < x &&
+			x < left + RECTSIZE / 2 &&
+			top + height * scaleY - RECTSIZE / 2 < y &&
+			y < top + height * scaleY + RECTSIZE / 2
 		) {
 			// 左下(6)
 			return 'leftBottom'
 		}
 		if (
-			left - rectSize / 2 < x &&
-			x < left + rectSize / 2 &&
-			top + (height * scaleY) / 2 - rectSize / 2 < y &&
-			y < top + (height * scaleY) / 2 + rectSize / 2
+			left - RECTSIZE / 2 < x &&
+			x < left + RECTSIZE / 2 &&
+			top + (height * scaleY) / 2 - RECTSIZE / 2 < y &&
+			y < top + (height * scaleY) / 2 + RECTSIZE / 2
 		) {
 			// 左中(7)
 			return 'leftCenter'
 		}
 		if (
-			left - rectSize / 2 < x &&
-			x < left + rectSize / 2 &&
-			top - rectSize / 2 < y &&
-			y < top + rectSize / 2
+			left - RECTSIZE / 2 < x &&
+			x < left + RECTSIZE / 2 &&
+			top - RECTSIZE / 2 < y &&
+			y < top + RECTSIZE / 2
 		) {
 			// 左上(8)
 			return 'leftTop'
@@ -411,7 +154,7 @@ function Stage(props: StageProps) {
 			maxWidth,
 			maxHeight,
 		)
-		if (imgUrl && backgroundImage.current) {
+		if (backgroundImage.current) {
 			// 底图
 			ctx.drawImage(
 				backgroundImage.current,
@@ -475,75 +218,75 @@ function Stage(props: StageProps) {
 		} = shape
 		ctx.fillStyle = 'rgba(255,125,113,0.2)'
 		ctx.fillRect(
-			left - rectSize,
-			top - rectSize,
-			widthR * scaleX + rectSize * 2,
-			heightR * scaleY + rectSize * 2,
+			left - RECTSIZE,
+			top - RECTSIZE,
+			widthR * scaleX + RECTSIZE * 2,
+			heightR * scaleY + RECTSIZE * 2,
 		)
 		ctx.fillStyle = 'yellow'
 		ctx.beginPath()
 		// 上中(1)
 		ctx.fillRect(
-			left + (widthR * scaleX) / 2 - rectSize / 2,
-			top - rectSize / 2,
-			rectSize,
-			rectSize,
+			left + (widthR * scaleX) / 2 - RECTSIZE / 2,
+			top - RECTSIZE / 2,
+			RECTSIZE,
+			RECTSIZE,
 		)
 		ctx.closePath()
 		// 右上(2)
 		ctx.fillRect(
-			widthR * scaleX + left - rectSize / 2,
-			top - rectSize / 2,
-			rectSize,
-			rectSize,
+			widthR * scaleX + left - RECTSIZE / 2,
+			top - RECTSIZE / 2,
+			RECTSIZE,
+			RECTSIZE,
 		)
 		ctx.closePath()
 		// 右中(3)
 		ctx.fillRect(
-			left + widthR * scaleX - rectSize / 2,
-			top + (heightR * scaleY) / 2 - rectSize / 2,
-			rectSize,
-			rectSize,
+			left + widthR * scaleX - RECTSIZE / 2,
+			top + (heightR * scaleY) / 2 - RECTSIZE / 2,
+			RECTSIZE,
+			RECTSIZE,
 		)
 		ctx.closePath()
 		// 右下(4)
 		ctx.fillRect(
-			left + widthR * scaleX - rectSize / 2,
-			top + heightR * scaleY - rectSize / 2,
-			rectSize,
-			rectSize,
+			left + widthR * scaleX - RECTSIZE / 2,
+			top + heightR * scaleY - RECTSIZE / 2,
+			RECTSIZE,
+			RECTSIZE,
 		)
 		ctx.closePath()
 		// 下中(5)
 		ctx.fillRect(
-			left + (widthR * scaleX) / 2 - rectSize / 2,
-			top + heightR * scaleY - rectSize / 2,
-			rectSize,
-			rectSize,
+			left + (widthR * scaleX) / 2 - RECTSIZE / 2,
+			top + heightR * scaleY - RECTSIZE / 2,
+			RECTSIZE,
+			RECTSIZE,
 		)
 		ctx.closePath()
 		// 左下(6)
 		ctx.fillRect(
-			left - rectSize / 2,
-			top + heightR * scaleY - rectSize / 2,
-			rectSize,
-			rectSize,
+			left - RECTSIZE / 2,
+			top + heightR * scaleY - RECTSIZE / 2,
+			RECTSIZE,
+			RECTSIZE,
 		)
 		ctx.closePath()
 		// 左中(7)
 		ctx.fillRect(
-			left - rectSize / 2,
-			top + (heightR * scaleY) / 2 - rectSize / 2,
-			rectSize,
-			rectSize,
+			left - RECTSIZE / 2,
+			top + (heightR * scaleY) / 2 - RECTSIZE / 2,
+			RECTSIZE,
+			RECTSIZE,
 		)
 		ctx.closePath()
 		// 左上(8)
 		ctx.fillRect(
-			left - rectSize / 2,
-			top - rectSize / 2,
-			rectSize,
-			rectSize,
+			left - RECTSIZE / 2,
+			top - RECTSIZE / 2,
+			RECTSIZE,
+			RECTSIZE,
 		)
 		ctx.closePath()
 		ctx.restore()
@@ -586,9 +329,21 @@ function Stage(props: StageProps) {
 		if (getRef) {
 			getRef({ clear, scale })
 		}
-		if (initHistory.length > 0) {
-			history.current = [...initHistory]
-			reRender()
+		if (imgUrl) {
+			const img = new Image()
+			img.src = imgUrl
+			img.onload = () => {
+				backgroundImage.current = img
+				if (initHistory.length > 0) {
+					history.current = [...initHistory]
+				}
+				reRender()
+			}
+		} else {
+			if (initHistory.length > 0) {
+				history.current = [...initHistory]
+				reRender()
+			}
 		}
 	}, [])
 	// 核心事件流
@@ -977,12 +732,6 @@ function Stage(props: StageProps) {
 			className={styles.stage}
 			style={{ height, width, background: 'transparent', ...style }}
 		>
-			<img
-				src={imgUrl}
-				alt="底图"
-				ref={backgroundImage}
-				style={{ visiable: 'hidden' }}
-			/>
 			<canvas ref={innerContainer} height={height} width={width} />
 			<canvas ref={outerContainer} height={height} width={width} />
 		</div>
