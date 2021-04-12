@@ -1,6 +1,5 @@
 export interface StageProps {
-	action: string;
-	onChange?: () => void;
+	onChange?: (any) => void;
 	forwardedRef?: any;
 	scale?: number;
 	width: number;
