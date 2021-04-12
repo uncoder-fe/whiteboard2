@@ -2,7 +2,7 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } f
 import { merge, fromEvent } from 'rxjs';
 import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators';
 import { RECTSIZE, CURSOR } from './common/enum';
-import { defaultPlugin, genShapePosition, getVertex, helpAxis, getAngle } from './util';
+import { defaultPlugin, genShapePosition, getVertex, helpAxis, getAngle, downloadImage } from './util';
 import { StageProps } from './interface';
 
 import styles from './index.less';
@@ -16,7 +16,7 @@ function Stage(props: StageProps) {
 		style = {},
 		plugins = [],
 		initHistory = [],
-		imgUrl,
+		backgroundImage = '',
 		maxWidth = width + 200,
 		maxHeight = height + 200,
 		helpLine = false,
@@ -29,7 +29,7 @@ function Stage(props: StageProps) {
 	// 存储记录
 	const history = useRef([]);
 	// 底图
-	const backgroundImage = useRef(null);
+	const backgroundImageRef = useRef(null);
 	// canvas的ref
 	const outerContainer = useRef(null);
 	const innerContainer = useRef(null);
@@ -150,10 +150,10 @@ function Stage(props: StageProps) {
 		ctx.save();
 		ctx.setTransform(1, 0, 0, 1, ox, oy);
 		ctx.clearRect(-(maxWidth - width) / 2, -(maxHeight - height) / 2, maxWidth, maxHeight);
-		if (backgroundImage.current) {
+		if (backgroundImageRef.current) {
 			// 底图
 			ctx.drawImage(
-				backgroundImage.current,
+				backgroundImageRef.current,
 				-(maxWidth - width) / 2,
 				-(maxHeight - height) / 2,
 				maxWidth,
@@ -263,22 +263,14 @@ function Stage(props: StageProps) {
 	}));
 	// 初始化
 	useEffect(() => {
-		if (imgUrl) {
-			const img = new Image();
-			img.src = imgUrl;
-			img.onload = () => {
-				backgroundImage.current = img;
-				if (initHistory.length > 0) {
-					history.current = [...initHistory];
-				}
-				reRender();
-			};
-		} else {
+		(async () => {
+			const img = await downloadImage(backgroundImage);
+			backgroundImageRef.current = img;
 			if (initHistory.length > 0) {
 				history.current = [...initHistory];
-				reRender();
 			}
-		}
+			reRender();
+		})();
 	}, []);
 	// 核心事件流
 	useEffect(() => {
@@ -498,9 +490,7 @@ function Stage(props: StageProps) {
 		);
 		const sub = source.subscribe((context: { shape: any; points: any }) => {
 			const { shape, points = [] } = context;
-			if (points.length < 0) {
-				return;
-			}
+			if (points.length < 0) return;
 			// 复制一份数据进行处理
 			const cloneShape = JSON.parse(JSON.stringify(shape));
 			const disX = points[points.length - 1][0] - points[0][0];
@@ -572,28 +562,9 @@ function Stage(props: StageProps) {
 				reRender(null, axisOriginClone);
 			}
 		});
-		// 注册滑动手势变化流，放到上面流
-		let source2 = merge($mousemove, $touchmove).pipe(map((event) => event));
-		const sub2 = source2.subscribe((position: { x: number; y: number }) => {
-			if (currentShapeId.current) {
-				const sl = hitSprite(position.x, position.y);
-				if (sl.length > 0) {
-					const isGrow = hitSpriteGrow(position.x, position.y);
-					if (isGrow) {
-						outerContainer.current.style.cursor = CURSOR[isGrow];
-					} else {
-						outerContainer.current.style.cursor = CURSOR['move'];
-					}
-				} else {
-					outerContainer.current.style.cursor = CURSOR['default'];
-				}
-			}
-		});
 		return function cleanup() {
 			sub.unsubscribe();
-			sub2.unsubscribe();
 			source = null;
-			source2 = null;
 		};
 	}, [action]);
 	return (

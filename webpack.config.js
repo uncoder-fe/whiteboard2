@@ -6,7 +6,7 @@ module.exports = {
 	entry: {
 		app: './src/example/app.tsx',
 	},
-	devtool: 'inline-source-map',
+	devtool: 'source-map',
 	devServer: {
 		contentBase: './dist',
 	},

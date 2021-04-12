@@ -6,7 +6,7 @@ export interface StageProps {
 	height: number;
 	maxWidth?: number;
 	maxHeight?: number;
-	imgUrl?: string;
+	backgroundImage?: string;
 	style?: object;
 	plugins?: any;
 	initHistory?: any;

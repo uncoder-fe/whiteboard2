@@ -21,7 +21,20 @@ export const defaultPlugin = [
 		},
 	},
 ];
-
+// 下载图
+export function downloadImage(url) {
+	return new Promise((resolve, reject) => {
+		if (url) {
+			const img = new Image();
+			img.src = url;
+			img.onload = () => {
+				resolve(img);
+			};
+		} else {
+			resolve('');
+		}
+	});
+}
 export function getAngle(startX, startY, moveX, moveY) {
 	const RAD_DEG = Math.PI / 180;
 	const dx = moveX - startX;
@@ -43,27 +56,13 @@ export function getRotateAngle(centerPoint, startPoint, endPoint) {
 	const numerator = v1[0] * v2[1] - v1[1] * v2[0];
 	// 公式的分母
 	const denominator =
-		Math.sqrt(Math.pow(v1[0], 2) + Math.pow(v1[1], 2)) *
-		Math.sqrt(Math.pow(v2[0], 2) + Math.pow(v2[1], 2));
+		Math.sqrt(Math.pow(v1[0], 2) + Math.pow(v1[1], 2)) * Math.sqrt(Math.pow(v2[0], 2) + Math.pow(v2[1], 2));
 	const sin = numerator / denominator;
 	return Math.asin(sin);
 }
 // 计算shape位置
 export const genShapePosition = (ops) => {
-	let {
-		isGrow,
-		disX,
-		disY,
-		left,
-		top,
-		width,
-		height,
-		scaleX,
-		scaleY,
-		flipX,
-		flipY,
-		angle,
-	} = ops;
+	let { isGrow, disX, disY, left, top, width, height, scaleX, scaleY, flipX, flipY, angle } = ops;
 	let newLeft = left;
 	let newTop = top;
 	let newScaleX = scaleX;
