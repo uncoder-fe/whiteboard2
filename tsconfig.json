@@ -1,19 +1,39 @@
 {
-    "compilerOptions": {
-        "jsx": "react",
-        "experimentalDecorators": true,
-        "module": "ES2015",
-        "target": "es3",
-        "moduleResolution": "node",
-        "noImplicitAny": false,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "noUnusedLocals": true,
-        "strictNullChecks": false,
-        "sourceMap": true,
-        "allowSyntheticDefaultImports": true
-        // "lib": ["es5", "dom"]
-    },
-    "include": ["src/*.tsx", "src/*.ts"],
-    "exclude": ["node_modules"]
+	"compilerOptions": {
+		"baseUrl": ".",
+		"jsx": "react",
+		"experimentalDecorators": true,
+		"lib": ["es6", "dom"],
+		"module": "ES2015",
+		"target": "es5",
+		"allowJs": false,
+		"checkJs": false,
+		"declaration": false,
+		"declarationMap": false,
+		"outDir": "dist",
+		"rootDir": "./src",
+		"composite": false,
+		"removeComments": true,
+		"moduleResolution": "node",
+		"noImplicitAny": false,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"noEmit": false,
+		"importHelpers": false,
+		"strictNullChecks": false,
+		"strict": false,
+		"sourceMap": true,
+		"strictFunctionTypes": true,
+		"allowSyntheticDefaultImports": true,
+		"preserveSymlinks": true
+	},
+	"include": ["src/*.tsx", "src/*.ts"],
+	"exclude": ["node_modules"],
+	"paths": {
+		"*": ["./node_modules/@types", "./typings/*"],
+		"jquery": ["node_modules/jquery/dist/jquery"]
+	},
+	"compileOnSave": false
 }

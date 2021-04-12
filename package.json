@@ -1,23 +1,32 @@
 {
-    "name": "drawsomething",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-        "start": "parcel ./index.html",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "",
-    "license": "ISC",
-    "devDependencies": {
-        "less": "^3.11.1",
-        "parcel-bundler": "^1.12.4",
-        "postcss-modules": "^2.0.0",
-        "typescript": "^3.8.3"
-    },
-    "dependencies": {
-        "react": "^16.13.1",
-        "react-dom": "^16.13.1",
-        "rxjs": "^6.5.5"
-    }
+	"name": "draw-something",
+	"version": "1.0.0",
+	"description": "绘制图形",
+	"private": true,
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"watch": "webpack --watch",
+		"start": "webpack serve --open",
+		"build": "webpack"
+	},
+	"author": "uncoder-fe",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/react": "^17.0.3",
+		"css-loader": "^5.2.1",
+		"html-webpack-plugin": "^5.3.1",
+		"less": "^4.1.1",
+		"less-loader": "^8.1.0",
+		"style-loader": "^2.0.0",
+		"ts-loader": "^8.1.0",
+		"typescript": "^4.2.4",
+		"webpack": "^5.31.2",
+		"webpack-cli": "^4.6.0",
+		"webpack-dev-server": "^3.11.2"
+	},
+	"dependencies": {
+		"react": "^17.0.2",
+		"react-dom": "^17.0.2",
+		"rxjs": "^6.6.7"
+	}
 }

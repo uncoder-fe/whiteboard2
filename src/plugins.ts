@@ -28,6 +28,7 @@ const plugins = [
 				width * scaleX,
 				height * scaleY,
 			)
+			// 测试图
 			const image = document.querySelector('#image')
 			ctx.drawImage(
 				image,
