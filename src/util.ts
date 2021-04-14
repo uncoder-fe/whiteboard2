@@ -236,28 +236,6 @@ export const genShapePosition = (ops) => {
 	}
 	return { newLeft, newTop, newScaleX, newScaleY, newFlipX, newFlipY };
 };
-// 原点坐标计算
-export function getVertex(maxWidth, maxHeight, width, height, x, y) {
-	let newX = x;
-	let newY = y;
-	const minX = -(maxWidth - width) / 2;
-	const minY = -(maxHeight - height) / 2;
-	const maxX = maxWidth - width - (maxWidth - width) / 2;
-	const maxY = maxHeight - height - (maxHeight - height) / 2;
-	if (x > maxX) {
-		newX = maxX;
-	}
-	if (x < minX) {
-		newX = minX;
-	}
-	if (y > maxY) {
-		newY = maxY;
-	}
-	if (y < minY) {
-		newY = minY;
-	}
-	return [newX, newY];
-}
 // 辅助线
 export function helpAxis(ctx, x, y, width, height, sizeX, sizeY) {
 	ctx.save();

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } f
 import { merge, fromEvent } from 'rxjs';
 import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators';
 import { RECTSIZE, CURSOR } from './common/enum';
-import { defaultPlugin, genShapePosition, getVertex, helpAxis, getAngle, downloadImage } from './util';
+import { defaultPlugin, genShapePosition, helpAxis, getAngle, downloadImage } from './util';
 import { StageProps } from './interface';
 
 import styles from './index.less';
@@ -17,10 +17,10 @@ function Stage(props: StageProps) {
 		plugins = [],
 		initHistory = [],
 		backgroundImage = '',
-		maxWidth = width + 200,
-		maxHeight = height + 200,
 		helpLine = false,
 	} = props;
+	const maxWidth = width + 200;
+	const maxHeight = height + 200;
 	const [action, setAction] = useState();
 	// 原始坐标系，viewport
 	const axisOrigin = useRef([0, 0]);
@@ -35,6 +35,28 @@ function Stage(props: StageProps) {
 	const innerContainer = useRef(null);
 	// 当前选中的shape
 	const currentShapeId = useRef(null);
+	// 原点坐标计算
+	const getVertex = (x, y) => {
+		let newX = x;
+		let newY = y;
+		const minX = -(maxWidth - width) / 2;
+		const minY = -(maxHeight - height) / 2;
+		const maxX = maxWidth - width - (maxWidth - width) / 2;
+		const maxY = maxHeight - height - (maxHeight - height) / 2;
+		if (x > maxX) {
+			newX = maxX;
+		}
+		if (x < minX) {
+			newX = minX;
+		}
+		if (y > maxY) {
+			newY = maxY;
+		}
+		if (y < minY) {
+			newY = minY;
+		}
+		return [newX, newY];
+	};
 	// 检测是否命中精灵
 	const hitSprite = (ox, oy) => {
 		const x = ox - axisOrigin.current[0];
@@ -466,14 +488,7 @@ function Stage(props: StageProps) {
 								if (action === 'moveCanvas') {
 									const disX = points[points.length - 1][0] - points[0][0];
 									const disY = points[points.length - 1][1] - points[0][1];
-									const cp = getVertex(
-										maxWidth,
-										maxHeight,
-										width,
-										height,
-										axisOrigin.current[0] + disX,
-										axisOrigin.current[1] + disY,
-									);
+									const cp = getVertex(axisOrigin.current[0] + disX, axisOrigin.current[1] + disY);
 									axisOrigin.current[0] = cp[0];
 									axisOrigin.current[1] = cp[1];
 									reRender();
@@ -549,14 +564,7 @@ function Stage(props: StageProps) {
 			// 更新坐标系
 			if (action === 'moveCanvas') {
 				const axisOriginClone = JSON.parse(JSON.stringify(axisOrigin.current));
-				const cp = getVertex(
-					maxWidth,
-					maxHeight,
-					width,
-					height,
-					axisOriginClone[0] + disX,
-					axisOriginClone[1] + disY,
-				);
+				const cp = getVertex(axisOriginClone[0] + disX, axisOriginClone[1] + disY);
 				axisOriginClone[0] = cp[0];
 				axisOriginClone[1] = cp[1];
 				reRender(null, axisOriginClone);
