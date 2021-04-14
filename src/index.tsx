@@ -66,9 +66,7 @@ function Stage(props: StageProps) {
 		const x = ox - axisOrigin.current[0];
 		const y = oy - axisOrigin.current[1];
 		const findShape = history.current.find((item) => item.id === currentShapeId.current);
-		if (!findShape) {
-			return null;
-		}
+		if (!findShape) return null;
 		const { left, top, width, height, scaleX, scaleY } = findShape;
 		if (
 			left + (width * scaleX) / 2 - RECTSIZE / 2 < x &&
@@ -162,9 +160,7 @@ function Stage(props: StageProps) {
 		}
 		for (let i = 0; i < list.length; i++) {
 			const { id, type } = list[i];
-			if (id === currentShapeId.current) {
-				continue;
-			}
+			if (id === currentShapeId.current) continue;
 			// 检测是否是新建动作，更新shape的路径信息
 			const drawAction = allPlugins.find((item) => item.action === type);
 			drawAction.draw(ctx, list[i]);
@@ -234,9 +230,7 @@ function Stage(props: StageProps) {
 	};
 	// 注册放大/缩小事件
 	const scale = (m) => {
-		if (!currentShapeId.current) {
-			return;
-		}
+		if (!currentShapeId.current) return;
 		const ctx = outerContainer.current.getContext('2d');
 		ctx.clearRect(0, 0, width, height);
 		const scaleFactor = 0.25;
