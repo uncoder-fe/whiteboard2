@@ -2,23 +2,14 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } f
 import { merge, fromEvent } from 'rxjs';
 import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators';
 import { RECTSIZE, CURSOR } from './common/enum';
-import { defaultPlugin, genShapePosition, helpAxis, getAngle, downloadImage } from './util';
+import { defaultPlugin, genShapePosition, getAngle } from './util';
 import { StageProps } from './interface';
 
 import styles from './index.less';
 
 // 主台
 function Stage(props: StageProps) {
-	const {
-		onChange,
-		height,
-		width,
-		style = {},
-		plugins = [],
-		initHistory = [],
-		backgroundImage = '',
-		helpLine = false,
-	} = props;
+	const { onChange, height, width, style = {}, plugins = [], initHistory = [], helpLine = false } = props;
 	const maxWidth = width + 200;
 	const maxHeight = height + 200;
 	const [action, setAction] = useState();
@@ -28,33 +19,49 @@ function Stage(props: StageProps) {
 	const allPlugins: any = [...defaultPlugin, ...plugins];
 	// 存储记录
 	const history = useRef([]);
-	// 底图
-	const backgroundImageRef = useRef(null);
 	// canvas的ref
 	const outerContainer = useRef(null);
 	const innerContainer = useRef(null);
 	// 当前选中的shape
 	const currentShapeId = useRef(null);
+	// 辅助线
+	const helpAxis = (x, y, sizeX, sizeY) => {
+		const ctx = innerContainer.current.getContext('2d');
+		ctx.save();
+		ctx.setLineDash([2, 6]);
+		ctx.strokeStyle = 'yellow';
+		ctx.lineWidth = 4;
+		ctx.beginPath();
+		ctx.moveTo(x + width / 2, y);
+		ctx.lineTo(x + width / 2, y + height);
+		ctx.moveTo(x, height / 2 + y);
+		ctx.lineTo(x + width, height / 2 + y);
+		ctx.stroke();
+		ctx.strokeRect(x, y, sizeX, sizeY);
+		ctx.strokeRect(x + sizeX, y + sizeY, sizeX, sizeY);
+		ctx.strokeRect(x - sizeX, y - sizeY, sizeX, sizeY);
+		ctx.restore();
+	};
 	// 原点坐标计算
 	const getVertex = (x, y) => {
 		let newX = x;
 		let newY = y;
-		const minX = -(maxWidth - width) / 2;
-		const minY = -(maxHeight - height) / 2;
-		const maxX = maxWidth - width - (maxWidth - width) / 2;
-		const maxY = maxHeight - height - (maxHeight - height) / 2;
-		if (x > maxX) {
-			newX = maxX;
-		}
-		if (x < minX) {
-			newX = minX;
-		}
-		if (y > maxY) {
-			newY = maxY;
-		}
-		if (y < minY) {
-			newY = minY;
-		}
+		// const minX = -(maxWidth - width) / 2;
+		// const minY = -(maxHeight - height) / 2;
+		// const maxX = maxWidth - width - (maxWidth - width) / 2;
+		// const maxY = maxHeight - height - (maxHeight - height) / 2;
+		// if (x > maxX) {
+		// 	newX = maxX;
+		// }
+		// if (x < minX) {
+		// 	newX = minX;
+		// }
+		// if (y > maxY) {
+		// 	newY = maxY;
+		// }
+		// if (y < minY) {
+		// 	newY = minY;
+		// }
 		return [newX, newY];
 	};
 	// 检测是否命中精灵
@@ -164,26 +171,16 @@ function Stage(props: StageProps) {
 		return null;
 	};
 	// 重新渲染
-	const reRender = (arr?: [], ap?: [number, number]) => {
-		const list = arr || history.current;
+	const reRender = (newAxis?: [number, number]) => {
+		const list = history.current;
 		const ctx = innerContainer.current.getContext('2d');
-		const ox = ap ? ap[0] : axisOrigin.current[0];
-		const oy = ap ? ap[1] : axisOrigin.current[1];
+		const ox = newAxis ? newAxis[0] : axisOrigin.current[0];
+		const oy = newAxis ? newAxis[1] : axisOrigin.current[1];
 		ctx.save();
 		ctx.setTransform(1, 0, 0, 1, ox, oy);
-		ctx.clearRect(-(maxWidth - width) / 2, -(maxHeight - height) / 2, maxWidth, maxHeight);
-		if (backgroundImageRef.current) {
-			// 底图
-			ctx.drawImage(
-				backgroundImageRef.current,
-				-(maxWidth - width) / 2,
-				-(maxHeight - height) / 2,
-				maxWidth,
-				maxHeight,
-			);
-		}
+		ctx.clearRect(-ox, -oy, width, height);
 		if (helpLine) {
-			helpAxis(ctx, 0, 0, width, height, (maxWidth - width) / 2, (maxHeight - height) / 2);
+			helpAxis(0, 0, (maxWidth - width) / 2, (maxHeight - height) / 2);
 		}
 		for (let i = 0; i < list.length; i++) {
 			const { id, type } = list[i];
@@ -196,12 +193,12 @@ function Stage(props: StageProps) {
 		}
 		ctx.restore();
 	};
-	// 渲染轮廓
+	// 渲染六角定位点
 	const drawShapeWidthControl = (shape) => {
 		const ctx = outerContainer.current.getContext('2d');
 		ctx.save();
 		ctx.setTransform(1, 0, 0, 1, axisOrigin.current[0], axisOrigin.current[1]);
-		ctx.clearRect(-(maxWidth - width) / 2, -(maxHeight - height) / 2, maxWidth, maxHeight);
+		ctx.clearRect(-axisOrigin.current[0], - axisOrigin.current[1], width, height);
 		// 检测是否是新建动作，更新shape的路径信息
 		const drawAction = allPlugins.find((item) => item.action === shape.type);
 		drawAction.draw(ctx, shape);
@@ -285,18 +282,14 @@ function Stage(props: StageProps) {
 	}));
 	// 初始化
 	useEffect(() => {
-		(async () => {
-			const img = await downloadImage(backgroundImage);
-			backgroundImageRef.current = img;
-			if (initHistory.length > 0) {
-				history.current = [...initHistory];
-			}
-			reRender();
-		})();
+		if (initHistory.length > 0) {
+			history.current = [...initHistory];
+		}
+		reRender();
 	}, []);
 	// 核心事件流
 	useEffect(() => {
-		if (action === 'rect' || action === 'circle' || action === 'moveCanvas') {
+		if (['rect', 'circle', 'moveCanvas'].includes(action)) {
 			// 切换为绘图模式时，清空
 			currentShapeId.current = null;
 			const ctx = outerContainer.current.getContext('2d');
@@ -366,7 +359,7 @@ function Stage(props: StageProps) {
 			map((event: { x: number; y: number }) => {
 				let shape = null;
 				// 检测是否是新建动作
-				if (action === 'rect' || action === 'circle') {
+				if (['circle', 'rect'].includes(action)) {
 					shape = {
 						id: Math.random().toString(36).slice(2),
 						type: action,
@@ -393,12 +386,12 @@ function Stage(props: StageProps) {
 						// 重新寻找新shape
 						const hitArry = hitSprite(event.x, event.y);
 						if (hitArry.length > 0) {
-							// 继续使用旧的
+							// 命中的是同一个
 							if (hitArry.some((item) => item.id === currentShapeId.current)) {
 								const r = history.current.find((item) => item.id === currentShapeId.current);
 								shape = JSON.parse(JSON.stringify(r));
 							} else {
-								// 全新
+								// 命中的是非当前已存在的，取最后一个
 								shape = JSON.parse(JSON.stringify(hitArry[hitArry.length - 1]));
 							}
 						}
@@ -563,11 +556,11 @@ function Stage(props: StageProps) {
 			}
 			// 更新坐标系
 			if (action === 'moveCanvas') {
-				const axisOriginClone = JSON.parse(JSON.stringify(axisOrigin.current));
-				const cp = getVertex(axisOriginClone[0] + disX, axisOriginClone[1] + disY);
-				axisOriginClone[0] = cp[0];
-				axisOriginClone[1] = cp[1];
-				reRender(null, axisOriginClone);
+				const axisOriginNew = JSON.parse(JSON.stringify(axisOrigin.current));
+				const cp = getVertex(axisOriginNew[0] + disX, axisOriginNew[1] + disY);
+				axisOriginNew[0] = cp[0];
+				axisOriginNew[1] = cp[1];
+				reRender(axisOriginNew);
 			}
 		});
 		return function cleanup() {

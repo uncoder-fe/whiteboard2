@@ -21,20 +21,7 @@ export const defaultPlugin = [
 		},
 	},
 ];
-// 下载图
-export function downloadImage(url) {
-	return new Promise((resolve, reject) => {
-		if (url) {
-			const img = new Image();
-			img.src = url;
-			img.onload = () => {
-				resolve(img);
-			};
-		} else {
-			resolve('');
-		}
-	});
-}
+
 export function getAngle(startX, startY, moveX, moveY) {
 	const RAD_DEG = Math.PI / 180;
 	const dx = moveX - startX;
@@ -236,20 +223,4 @@ export const genShapePosition = (ops) => {
 	}
 	return { newLeft, newTop, newScaleX, newScaleY, newFlipX, newFlipY };
 };
-// 辅助线
-export function helpAxis(ctx, x, y, width, height, sizeX, sizeY) {
-	ctx.save();
-	ctx.setLineDash([2, 6]);
-	ctx.strokeStyle = 'yellow';
-	ctx.lineWidth = 4;
-	ctx.beginPath();
-	ctx.moveTo(x + width / 2, y);
-	ctx.lineTo(x + width / 2, y + height);
-	ctx.moveTo(x, height / 2 + y);
-	ctx.lineTo(x + width, height / 2 + y);
-	ctx.stroke();
-	ctx.strokeRect(x, y, sizeX, sizeY);
-	ctx.strokeRect(x + sizeX, y + sizeY, sizeX, sizeY);
-	ctx.strokeRect(x - sizeX, y - sizeY, sizeX, sizeY);
-	ctx.restore();
-}
+

@@ -13,7 +13,7 @@ const App = () => {
 				<button onClick={() => cRef.current.selectAction('rect')}>矩形</button>
 				<button onClick={() => cRef.current.selectAction('circle')}>圆圈</button>
 				<button onClick={() => cRef.current.selectAction('move')}>移动</button>
-				<button onClick={() => cRef.current.selectAction('moveCanvas')}>moveCanvas</button>
+				<button onClick={() => cRef.current.selectAction('moveCanvas')}>移动视窗</button>
 				<button onClick={() => cRef.current.scale('enlarge')}>放大</button>
 				<button onClick={() => cRef.current.scale('shrink')}>缩小</button>
 				<button onClick={() => cRef.current.clean()}>清空</button>

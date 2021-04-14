@@ -4,7 +4,6 @@ export interface StageProps {
 	scale?: number;
 	width: number;
 	height: number;
-	backgroundImage?: string;
 	style?: object;
 	plugins?: any;
 	initHistory?: any;
