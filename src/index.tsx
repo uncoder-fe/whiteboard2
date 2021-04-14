@@ -42,28 +42,6 @@ function Stage(props: StageProps) {
 		ctx.strokeRect(x - sizeX, y - sizeY, sizeX, sizeY);
 		ctx.restore();
 	};
-	// 原点坐标计算
-	const getVertex = (x, y) => {
-		let newX = x;
-		let newY = y;
-		// const minX = -(maxWidth - width) / 2;
-		// const minY = -(maxHeight - height) / 2;
-		// const maxX = maxWidth - width - (maxWidth - width) / 2;
-		// const maxY = maxHeight - height - (maxHeight - height) / 2;
-		// if (x > maxX) {
-		// 	newX = maxX;
-		// }
-		// if (x < minX) {
-		// 	newX = minX;
-		// }
-		// if (y > maxY) {
-		// 	newY = maxY;
-		// }
-		// if (y < minY) {
-		// 	newY = minY;
-		// }
-		return [newX, newY];
-	};
 	// 检测是否命中精灵
 	const hitSprite = (ox, oy) => {
 		const x = ox - axisOrigin.current[0];
@@ -198,7 +176,7 @@ function Stage(props: StageProps) {
 		const ctx = outerContainer.current.getContext('2d');
 		ctx.save();
 		ctx.setTransform(1, 0, 0, 1, axisOrigin.current[0], axisOrigin.current[1]);
-		ctx.clearRect(-axisOrigin.current[0], - axisOrigin.current[1], width, height);
+		ctx.clearRect(-axisOrigin.current[0], -axisOrigin.current[1], width, height);
 		// 检测是否是新建动作，更新shape的路径信息
 		const drawAction = allPlugins.find((item) => item.action === shape.type);
 		drawAction.draw(ctx, shape);
@@ -271,7 +249,7 @@ function Stage(props: StageProps) {
 		drawShapeWidthControl(shape);
 		reRender();
 		// 回调数据结果
-		if (onChange) {
+		if (onChange && history.current.length) {
 			onChange(history.current);
 		}
 	};
@@ -481,13 +459,12 @@ function Stage(props: StageProps) {
 								if (action === 'moveCanvas') {
 									const disX = points[points.length - 1][0] - points[0][0];
 									const disY = points[points.length - 1][1] - points[0][1];
-									const cp = getVertex(axisOrigin.current[0] + disX, axisOrigin.current[1] + disY);
-									axisOrigin.current[0] = cp[0];
-									axisOrigin.current[1] = cp[1];
+									axisOrigin.current[0] = axisOrigin.current[0] + disX;
+									axisOrigin.current[1] = axisOrigin.current[1] + disY;
 									reRender();
 								}
 								// 回调数据结果
-								if (onChange) {
+								if (onChange && history.current.length) {
 									onChange(history.current);
 								}
 							}),
@@ -557,9 +534,8 @@ function Stage(props: StageProps) {
 			// 更新坐标系
 			if (action === 'moveCanvas') {
 				const axisOriginNew = JSON.parse(JSON.stringify(axisOrigin.current));
-				const cp = getVertex(axisOriginNew[0] + disX, axisOriginNew[1] + disY);
-				axisOriginNew[0] = cp[0];
-				axisOriginNew[1] = cp[1];
+				axisOriginNew[0] = axisOriginNew[0] + disX;
+				axisOriginNew[1] = axisOriginNew[1] + disY;
 				reRender(axisOriginNew);
 			}
 		});
