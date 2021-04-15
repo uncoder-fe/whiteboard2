@@ -9,14 +9,12 @@ import styles from './index.less';
 
 // 主台
 function Stage(props: StageProps) {
-	const { onChange, height, width, style = {}, plugins = [], initHistory = [], helpLine = false } = props;
-	const maxWidth = width + 200;
-	const maxHeight = height + 200;
+	const { onChange, height, width, style = {}, plugin = [], initHistory = [], helpLine = false } = props;
 	const [action, setAction] = useState();
 	// 原始坐标系，viewport
 	const axisOrigin = useRef([0, 0]);
 	// 绘制动作组
-	const allPlugins: any = [...defaultPlugin, ...plugins];
+	const plugins: any = [...defaultPlugin, ...plugin];
 	// 存储记录
 	const history = useRef([]);
 	// canvas的ref
@@ -161,7 +159,7 @@ function Stage(props: StageProps) {
 			const { id, type } = list[i];
 			if (id === currentShapeId.current) continue;
 			// 检测是否是新建动作，更新shape的路径信息
-			const drawAction = allPlugins.find((item) => item.action === type);
+			const drawAction = plugins.find((item) => item.action === type);
 			drawAction.draw(ctx, list[i]);
 		}
 		ctx.restore();
@@ -173,7 +171,7 @@ function Stage(props: StageProps) {
 		ctx.setTransform(1, 0, 0, 1, axisOrigin.current[0], axisOrigin.current[1]);
 		ctx.clearRect(-axisOrigin.current[0], -axisOrigin.current[1], width, height);
 		// 检测是否是新建动作，更新shape的路径信息
-		const drawAction = allPlugins.find((item) => item.action === shape.type);
+		const drawAction = plugins.find((item) => item.action === shape.type);
 		drawAction.draw(ctx, shape);
 		// 绘制轮廓
 		const { left, top, width: widthR, height: heightR, scaleX, scaleY } = shape;
@@ -228,17 +226,18 @@ function Stage(props: StageProps) {
 		}
 	};
 	// 注册放大/缩小事件
-	const scale = (m) => {
+	const scale = (type) => {
 		if (!currentShapeId.current) return;
 		const ctx = outerContainer.current.getContext('2d');
 		ctx.clearRect(0, 0, width, height);
 		const scaleFactor = 0.25;
 		const shape = history.current.find((item) => item.id === currentShapeId.current);
-		shape.scaleX = shape.scaleX + (m === 'enlarge' ? 1 : -1) * scaleFactor;
-		shape.scaleY = shape.scaleY + (m === 'enlarge' ? 1 : -1) * scaleFactor * (shape.scaleY / shape.scaleX);
-		shape.left = shape.left + ((m === 'enlarge' ? -1 : 1) * (scaleFactor * shape.width)) / 2;
+		shape.scaleX = shape.scaleX + (type === 'enlarge' ? 1 : -1) * scaleFactor;
+		shape.scaleY = shape.scaleY + (type === 'enlarge' ? 1 : -1) * scaleFactor * (shape.scaleY / shape.scaleX);
+		shape.left = shape.left + ((type === 'enlarge' ? -1 : 1) * (scaleFactor * shape.width)) / 2;
 		shape.top =
-			shape.top + ((m === 'enlarge' ? -1 : 1) * (scaleFactor * (shape.scaleY / shape.scaleX) * shape.height)) / 2;
+			shape.top +
+			((type === 'enlarge' ? -1 : 1) * (scaleFactor * (shape.scaleY / shape.scaleX) * shape.height)) / 2;
 		drawShapeWidthControl(shape);
 		reRender();
 		// 回调数据结果
@@ -249,7 +248,7 @@ function Stage(props: StageProps) {
 	useImperativeHandle(props.forwardedRef, () => ({
 		clean,
 		scale,
-		selectAction: (a) => setAction(a),
+		selectAction: (nextAction) => setAction(nextAction),
 	}));
 	// 初始化
 	useEffect(() => {
@@ -275,7 +274,7 @@ function Stage(props: StageProps) {
 			outerContainer.current.parentNode.style.pointerEvents = 'none';
 		}
 		// 检测是否是新建动作，更新shape的路径信息
-		const drawAction = allPlugins.find((item) => item.action === action);
+		const drawAction = plugins.find((item) => item.action === action);
 		// 鼠标和触控事件合并
 		const $mousedown = fromEvent(outerContainer.current, 'mousedown').pipe(
 			map((event: any) => {
@@ -351,16 +350,16 @@ function Stage(props: StageProps) {
 					// 存在高亮，判定是不是缩放区域
 					const isGrow = hitSpriteGrow(event.x, event.y);
 					if (isGrow) {
-						const r = history.current.find((item) => item.id === currentShapeId.current);
-						shape = JSON.parse(JSON.stringify(r));
+						const currentShape = history.current.find((item) => item.id === currentShapeId.current);
+						shape = JSON.parse(JSON.stringify(currentShape));
 					} else {
 						// 重新寻找新shape
 						const hitArry = hitSprite(event.x, event.y);
 						if (hitArry.length > 0) {
 							// 命中的是同一个
 							if (hitArry.some((item) => item.id === currentShapeId.current)) {
-								const r = history.current.find((item) => item.id === currentShapeId.current);
-								shape = JSON.parse(JSON.stringify(r));
+								const currentShape = history.current.find((item) => item.id === currentShapeId.current);
+								shape = JSON.parse(JSON.stringify(currentShape));
 							} else {
 								// 命中的是非当前已存在的，取最后一个
 								shape = JSON.parse(JSON.stringify(hitArry[hitArry.length - 1]));
@@ -393,8 +392,8 @@ function Stage(props: StageProps) {
 						merge($mouseup, $touchend).pipe(
 							tap(() => {
 								// 检测是否是新建动作，更新shape坐标和大小信息
-								if ((action === 'rect' || action === 'circle') && shape) {
-									// 更新矩形区域大小，在这更新减少在绘制过程中的计算导致的性能消耗
+								if (['rect', 'circle'].includes(action) && shape) {
+									// 更新矩形区域大小，在此处更新减少在绘制过程中的计算导致的性能消耗
 									const left = Math.min(shape.left, points[points.length - 1][0]);
 									const top = Math.min(shape.top, points[points.length - 1][1]);
 									const widthR = Math.abs(points[points.length - 1][0] - shape.left);
@@ -415,7 +414,7 @@ function Stage(props: StageProps) {
 								// 移动
 								if (action === 'move' && points.length > 1 && shape) {
 									const shapeR = history.current.find((item) => item.id === shape.id);
-									// 更新矩形区域大小，在这更新减少在绘制过程中的计算导致的性能消耗
+									// 更新矩形区域大小，在此处更新减少在绘制过程中的计算导致的性能消耗
 									const isGrow = hitSpriteGrow(points[0][0], points[0][1]);
 									const disX = points[points.length - 1][0] - points[0][0];
 									const disY = points[points.length - 1][1] - points[0][1];
@@ -474,7 +473,7 @@ function Stage(props: StageProps) {
 			const disX = points[points.length - 1][0] - points[0][0];
 			const disY = points[points.length - 1][1] - points[0][1];
 			// 检测是否是新建动作
-			if ((action === 'rect' || action === 'circle') && shape) {
+			if (['rect', 'circle'].includes(action) && shape) {
 				const ctx = outerContainer.current.getContext('2d');
 				ctx.clearRect(0, 0, width, height);
 				const left = Math.min(shape.left, points[points.length - 1][0]);
@@ -486,7 +485,11 @@ function Stage(props: StageProps) {
 				cloneShape.top = top;
 				cloneShape.width = widthR;
 				cloneShape.height = heightR;
-				drawAction.draw(ctx, cloneShape);
+				try {
+					drawAction.draw(ctx, cloneShape);
+				} catch (error) {
+					console.log(error);
+				}
 			}
 			// 移动
 			if (action === 'move' && shape) {
@@ -526,10 +529,10 @@ function Stage(props: StageProps) {
 			}
 			// 更新坐标系
 			if (action === 'moveCanvas') {
-				const axisOriginNew = JSON.parse(JSON.stringify(axisOrigin.current));
-				axisOriginNew[0] = axisOriginNew[0] + disX;
-				axisOriginNew[1] = axisOriginNew[1] + disY;
-				reRender(axisOriginNew);
+				const axisOriginTemp = JSON.parse(JSON.stringify(axisOrigin.current));
+				axisOriginTemp[0] = axisOriginTemp[0] + disX;
+				axisOriginTemp[1] = axisOriginTemp[1] + disY;
+				reRender(axisOriginTemp);
 			}
 		});
 		return function cleanup() {

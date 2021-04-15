@@ -5,7 +5,7 @@ export interface StageProps {
 	width: number;
 	height: number;
 	style?: object;
-	plugins?: any;
+	plugin?: any;
 	initHistory?: any;
 	generateImageBackgroundColor?: string;
 	resetDefaultStyle?: {

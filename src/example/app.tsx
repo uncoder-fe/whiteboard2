@@ -25,7 +25,7 @@ const App = () => {
 				}}
 				height={800}
 				width={800}
-				plugins={plugins}
+				plugin={plugins}
 				helpLine
 			/>
 			<img src={icon} alt="" id="image" style={{ display: 'none' }} />
