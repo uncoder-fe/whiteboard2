@@ -26,7 +26,6 @@ const App = () => {
 				height={800}
 				width={800}
 				plugins={plugins}
-				backgroundImage="https://placekitten.com/800/800"
 				helpLine
 			/>
 			<img src={icon} alt="" id="image" style={{ display: 'none' }} />

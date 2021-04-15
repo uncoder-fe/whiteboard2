@@ -25,21 +25,20 @@ function Stage(props: StageProps) {
 	// 当前选中的shape
 	const currentShapeId = useRef(null);
 	// 辅助线
-	const helpAxis = (x, y, sizeX, sizeY) => {
+	const helpAxis = (x, y) => {
 		const ctx = innerContainer.current.getContext('2d');
 		ctx.save();
-		ctx.setLineDash([2, 6]);
-		ctx.strokeStyle = 'yellow';
-		ctx.lineWidth = 4;
+		ctx.setLineDash([8, 18]);
+		ctx.strokeStyle = '#5fea19';
+		ctx.lineWidth = 2;
 		ctx.beginPath();
 		ctx.moveTo(x + width / 2, y);
 		ctx.lineTo(x + width / 2, y + height);
 		ctx.moveTo(x, height / 2 + y);
 		ctx.lineTo(x + width, height / 2 + y);
 		ctx.stroke();
-		ctx.strokeRect(x, y, sizeX, sizeY);
-		ctx.strokeRect(x + sizeX, y + sizeY, sizeX, sizeY);
-		ctx.strokeRect(x - sizeX, y - sizeY, sizeX, sizeY);
+		ctx.strokeRect(x, y, width, height);
+		ctx.fillText('(0,0)', x, y + 10);
 		ctx.restore();
 	};
 	// 检测是否命中精灵
@@ -156,7 +155,7 @@ function Stage(props: StageProps) {
 		ctx.setTransform(1, 0, 0, 1, ox, oy);
 		ctx.clearRect(-ox, -oy, width, height);
 		if (helpLine) {
-			helpAxis(0, 0, (maxWidth - width) / 2, (maxHeight - height) / 2);
+			helpAxis(0, 0);
 		}
 		for (let i = 0; i < list.length; i++) {
 			const { id, type } = list[i];
