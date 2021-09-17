@@ -8,6 +8,8 @@ module.exports = {
 	},
 	devtool: 'source-map',
 	devServer: {
+		port: 4000,
+		host: '0.0.0.0',
 		contentBase: './dist',
 	},
 	plugins: [

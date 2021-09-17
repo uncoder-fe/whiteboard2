@@ -7,7 +7,6 @@ export interface StageProps {
 	style?: object;
 	plugin?: any;
 	initHistory?: any;
-	generateImageBackgroundColor?: string;
 	resetDefaultStyle?: {
 		drawStyle: {
 			stroke: string;
