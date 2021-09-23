@@ -10,7 +10,7 @@ import styles from './index.less';
 // 主台
 function Stage(props: StageProps) {
 	const { onChange, height, width, style = {}, plugin = [], initHistory = [], helpLine = false } = props;
-	const [action, setAction] = useState();
+	const [action, setAction] = useState('');
 	// 原始坐标系，viewport
 	const axisOrigin = useRef([0, 0]);
 	// 绘制动作组
@@ -23,8 +23,7 @@ function Stage(props: StageProps) {
 	// 当前选中的shape
 	const currentShapeId = useRef(null);
 	// 辅助线
-	const helpAxis = (x, y) => {
-		const ctx = innerContainer.current.getContext('2d');
+	const drawHelpAxis = (ctx, x, y) => {
 		ctx.save();
 		ctx.setLineDash([8, 18]);
 		ctx.strokeStyle = '#5fea19';
@@ -152,9 +151,7 @@ function Stage(props: StageProps) {
 		ctx.save();
 		ctx.setTransform(1, 0, 0, 1, ox, oy);
 		ctx.clearRect(-ox, -oy, width, height);
-		if (helpLine) {
-			helpAxis(0, 0);
-		}
+		if (helpLine) drawHelpAxis(ctx, 0, 0);
 		for (let i = 0; i < list.length; i++) {
 			const { id, type } = list[i];
 			if (id === currentShapeId.current) continue;
@@ -221,9 +218,7 @@ function Stage(props: StageProps) {
 	const clean = () => {
 		history.current = [];
 		// 回调数据结果
-		if (onChange) {
-			onChange([]);
-		}
+		if (onChange) onChange([]);
 	};
 	// 注册放大/缩小事件
 	const scale = (type) => {
@@ -418,26 +413,20 @@ function Stage(props: StageProps) {
 									const isGrow = hitSpriteGrow(points[0][0], points[0][1]);
 									const disX = points[points.length - 1][0] - points[0][0];
 									const disY = points[points.length - 1][1] - points[0][1];
-									const {
-										newLeft,
-										newTop,
-										newScaleX,
-										newScaleY,
-										newFlipX,
-										newFlipY,
-									} = genShapePosition({
-										isGrow,
-										disX,
-										disY,
-										top: shapeR.top,
-										left: shapeR.left,
-										width: shapeR.width,
-										height: shapeR.height,
-										scaleX: shapeR.scaleX,
-										scaleY: shapeR.scaleY,
-										flipX: shapeR.flipX,
-										flipY: shapeR.flipY,
-									});
+									const { newLeft, newTop, newScaleX, newScaleY, newFlipX, newFlipY } =
+										genShapePosition({
+											isGrow,
+											disX,
+											disY,
+											top: shapeR.top,
+											left: shapeR.left,
+											width: shapeR.width,
+											height: shapeR.height,
+											scaleX: shapeR.scaleX,
+											scaleY: shapeR.scaleY,
+											flipX: shapeR.flipX,
+											flipY: shapeR.flipY,
+										});
 									shapeR.left = newLeft;
 									shapeR.top = newTop;
 									shapeR.scaleX = newScaleX;
