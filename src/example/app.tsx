@@ -21,7 +21,7 @@ const App = () => {
 			<Stage
 				ref={cRef}
 				onChange={(data) => {
-					console.log(data);
+					// console.log(data);
 				}}
 				height={800}
 				width={800}

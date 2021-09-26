@@ -21,7 +21,6 @@ export const defaultPlugin = [
 		},
 	},
 ];
-
 export function getAngle(startX, startY, moveX, moveY) {
 	const RAD_DEG = Math.PI / 180;
 	const dx = moveX - startX;
@@ -47,6 +46,12 @@ export function getRotateAngle(centerPoint, startPoint, endPoint) {
 	const sin = numerator / denominator;
 	return Math.asin(sin);
 }
+
+export function getRotateAngle2(center, end) {
+	const r = Math.atan2(end.y - center.y, end.x - center.x) + Math.PI / 2;
+	return r;
+}
+
 // 计算shape位置
 export const genShapePosition = (ops) => {
 	let { isGrow, disX, disY, left, top, width, height, scaleX, scaleY, flipX, flipY, angle } = ops;
@@ -223,4 +228,3 @@ export const genShapePosition = (ops) => {
 	}
 	return { newLeft, newTop, newScaleX, newScaleY, newFlipX, newFlipY };
 };
-

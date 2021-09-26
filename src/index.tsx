@@ -2,7 +2,7 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } f
 import { merge, fromEvent } from 'rxjs';
 import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators';
 import { RECTSIZE, CURSOR } from './common/enum';
-import { defaultPlugin, genShapePosition, getAngle } from './util';
+import { defaultPlugin, genShapePosition, getAngle, getRotateAngle2 } from './util';
 import { StageProps } from './interface';
 
 import styles from './index.less';
@@ -162,7 +162,7 @@ function Stage(props: StageProps) {
 		ctx.restore();
 	};
 	// 渲染六角定位点
-	const drawShapeWidthControl = (shape) => {
+	const drawShapeWithControl = (shape) => {
 		const ctx = outerContainer.current.getContext('2d');
 		ctx.save();
 		ctx.setTransform(1, 0, 0, 1, axisOrigin.current[0], axisOrigin.current[1]);
@@ -223,22 +223,21 @@ function Stage(props: StageProps) {
 	// 注册放大/缩小事件
 	const scale = (type) => {
 		if (!currentShapeId.current) return;
+		const shape = history.current.find((item) => item.id === currentShapeId.current);
+		if (shape.scaleX < 0.5 && type !== 'enlarge') return;
 		const ctx = outerContainer.current.getContext('2d');
 		ctx.clearRect(0, 0, width, height);
-		const scaleFactor = 0.25;
-		const shape = history.current.find((item) => item.id === currentShapeId.current);
+		const scaleFactor = 0.1;
 		shape.scaleX = shape.scaleX + (type === 'enlarge' ? 1 : -1) * scaleFactor;
 		shape.scaleY = shape.scaleY + (type === 'enlarge' ? 1 : -1) * scaleFactor * (shape.scaleY / shape.scaleX);
 		shape.left = shape.left + ((type === 'enlarge' ? -1 : 1) * (scaleFactor * shape.width)) / 2;
 		shape.top =
 			shape.top +
 			((type === 'enlarge' ? -1 : 1) * (scaleFactor * (shape.scaleY / shape.scaleX) * shape.height)) / 2;
-		drawShapeWidthControl(shape);
+		drawShapeWithControl(shape);
 		reRender();
 		// 回调数据结果
-		if (onChange && history.current.length) {
-			onChange(history.current);
-		}
+		if (onChange && history.current.length) onChange(history.current);
 	};
 	useImperativeHandle(props.forwardedRef, () => ({
 		clean,
@@ -366,7 +365,7 @@ function Stage(props: StageProps) {
 						// 从真实区域删除这个shape的渲染
 						reRender();
 						// 把这个shape渲染到事件屏操作
-						drawShapeWidthControl(shape);
+						drawShapeWithControl(shape);
 					}
 				}
 				return [event.x, event.y, shape];
@@ -413,20 +412,26 @@ function Stage(props: StageProps) {
 									const isGrow = hitSpriteGrow(points[0][0], points[0][1]);
 									const disX = points[points.length - 1][0] - points[0][0];
 									const disY = points[points.length - 1][1] - points[0][1];
-									const { newLeft, newTop, newScaleX, newScaleY, newFlipX, newFlipY } =
-										genShapePosition({
-											isGrow,
-											disX,
-											disY,
-											top: shapeR.top,
-											left: shapeR.left,
-											width: shapeR.width,
-											height: shapeR.height,
-											scaleX: shapeR.scaleX,
-											scaleY: shapeR.scaleY,
-											flipX: shapeR.flipX,
-											flipY: shapeR.flipY,
-										});
+									const {
+										newLeft,
+										newTop,
+										newScaleX,
+										newScaleY,
+										newFlipX,
+										newFlipY,
+									} = genShapePosition({
+										isGrow,
+										disX,
+										disY,
+										top: shapeR.top,
+										left: shapeR.left,
+										width: shapeR.width,
+										height: shapeR.height,
+										scaleX: shapeR.scaleX,
+										scaleY: shapeR.scaleY,
+										flipX: shapeR.flipX,
+										flipY: shapeR.flipY,
+									});
 									shapeR.left = newLeft;
 									shapeR.top = newTop;
 									shapeR.scaleX = newScaleX;
@@ -504,16 +509,16 @@ function Stage(props: StageProps) {
 					cloneShape.scaleY = newScaleY;
 					cloneShape.flipX = newFlipX;
 					cloneShape.flipY = newFlipY;
-					drawShapeWidthControl(cloneShape);
+					drawShapeWithControl(cloneShape);
 				} else {
+					const center = { x: shape.left + shape.width / 2, y: shape.left + shape.width / 2 };
 					// 旋转
-					const { angle, rotate } = getAngle(
-						points[0][0],
-						points[0][1],
-						points[points.length - 1][0],
-						points[points.length - 1][1],
-					);
-					console.log(angle, rotate);
+					const rotate = getRotateAngle2(center, {
+						x: points[points.length - 1][0],
+						y: points[points.length - 1][1],
+					});
+					cloneShape.rotate = rotate;
+					drawShapeWithControl(cloneShape);
 				}
 			}
 			// 更新坐标系

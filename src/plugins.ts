@@ -7,7 +7,7 @@ const plugins = [
 		},
 		draw: function (ctx, shape) {
 			// console.log(shape)
-			const { left, top, width, height, scaleX, scaleY, flipX, flipY } = shape;
+			const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;
 			ctx.save();
 			ctx.transform(flipX ? -1 : 1, 0, 0, flipY ? -1 : 1, 0, 0);
 			for (const i in this.style) {
@@ -19,6 +19,7 @@ const plugins = [
 				width * scaleX,
 				height * scaleY,
 			);
+			ctx.rotate(rotate);
 			// 测试图
 			const image = document.querySelector('#image');
 			ctx.drawImage(
