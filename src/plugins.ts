@@ -12,13 +12,13 @@ const plugins = [
 			for (const i in this.style) {
 				ctx[i] = this.style[i];
 			}
-			// 控制反转
-			ctx.transform(flipX ? -1 : 1, 0, 0, flipY ? -1 : 1, 0, 0);
-			// if (rotate) {
-			// 	ctx.translate(left + width / 2, top + height / 2);
-			// 	ctx.rotate(rotate);
-			// 	ctx.translate(-(left + width / 2), -(top + height / 2));
-			// }
+			// 控制镜像反转
+			ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+			if (rotate) {
+				ctx.translate(left + (width * scaleX) / 2, top + (height * scaleY) / 2);
+				ctx.rotate(rotate);
+				ctx.translate(-(left + (width * scaleX) / 2), -(top + (height * scaleY) / 2));
+			}
 			ctx.strokeRect(
 				flipX ? -(left + width * scaleX) : left,
 				flipY ? -(top + height * scaleY) : top,
