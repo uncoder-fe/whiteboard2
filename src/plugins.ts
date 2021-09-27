@@ -9,17 +9,22 @@ const plugins = [
 			// console.log(shape)
 			const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;
 			ctx.save();
-			ctx.transform(flipX ? -1 : 1, 0, 0, flipY ? -1 : 1, 0, 0);
 			for (const i in this.style) {
 				ctx[i] = this.style[i];
 			}
+			// 控制反转
+			ctx.transform(flipX ? -1 : 1, 0, 0, flipY ? -1 : 1, 0, 0);
+			// if (rotate) {
+			// 	ctx.translate(left + width / 2, top + height / 2);
+			// 	ctx.rotate(rotate);
+			// 	ctx.translate(-(left + width / 2), -(top + height / 2));
+			// }
 			ctx.strokeRect(
 				flipX ? -(left + width * scaleX) : left,
 				flipY ? -(top + height * scaleY) : top,
 				width * scaleX,
 				height * scaleY,
 			);
-			ctx.rotate(rotate);
 			// 测试图
 			const image = document.querySelector('#image');
 			ctx.drawImage(
