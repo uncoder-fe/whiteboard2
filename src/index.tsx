@@ -489,7 +489,19 @@ function Stage(props: StageProps) {
 			if (action === 'move' && shape) {
 				// 计算新的位置
 				const isGrow = hitSpriteGrow(points[0][0], points[0][1]);
-				if (isGrow !== 'rotateCenter') {
+				if (isGrow === 'rotateCenter') {
+					const center = {
+						x: shape.left + (shape.width * shape.scaleX) / 2,
+						y: shape.top + (shape.height * shape.scaleY) / 2,
+					};
+					// 旋转
+					const rotate = getRotateAngle2(center, {
+						x: points[points.length - 1][0],
+						y: points[points.length - 1][1],
+					});
+					cloneShape.rotate = rotate;
+					drawShapeWithControl(cloneShape);
+				} else if (isGrow !== 'rotateCenter') {
 					const { newLeft, newTop, newScaleX, newScaleY, newFlipX, newFlipY } = genShapePosition({
 						isGrow,
 						disX,
@@ -509,15 +521,6 @@ function Stage(props: StageProps) {
 					cloneShape.scaleY = newScaleY;
 					cloneShape.flipX = newFlipX;
 					cloneShape.flipY = newFlipY;
-					drawShapeWithControl(cloneShape);
-				} else {
-					const center = { x: shape.left + shape.width / 2, y: shape.left + shape.width / 2 };
-					// 旋转
-					const rotate = getRotateAngle2(center, {
-						x: points[points.length - 1][0],
-						y: points[points.length - 1][1],
-					});
-					cloneShape.rotate = rotate;
 					drawShapeWithControl(cloneShape);
 				}
 			}
