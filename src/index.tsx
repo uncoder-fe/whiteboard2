@@ -254,7 +254,12 @@ function Stage(props: StageProps) {
 	// 注册清空事件
 	const clean = () => {
 		history.current = [];
+		// 重绘，顺便清空
 		reRender();
+		// 手动清空outerCanvas
+		const ctxOuter = outerContainer.current.getContext('2d');
+		ctxOuter.setTransform(1, 0, 0, 1, axisOrigin.current[0], axisOrigin.current[1]);
+		ctxOuter.clearRect(-axisOrigin.current[0], -axisOrigin.current[1], width, height);
 		// 回调数据结果
 		if (onChange) onChange([]);
 	};
@@ -446,7 +451,7 @@ function Stage(props: StageProps) {
 									reRender();
 
 									// TODO: 如果使用points进行绘图，做形变时计算无从下手，所以在此，需要把points转换为图片（类似矩形）
-									
+
 								}
 								// 移动
 								if (action === 'move' && points.length > 1 && shape) {
