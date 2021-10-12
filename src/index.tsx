@@ -254,6 +254,7 @@ function Stage(props: StageProps) {
 	// 注册清空事件
 	const clean = () => {
 		history.current = [];
+		reRender();
 		// 回调数据结果
 		if (onChange) onChange([]);
 	};
