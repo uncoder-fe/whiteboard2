@@ -444,6 +444,9 @@ function Stage(props: StageProps) {
 									history.current = [...history.current, shape];
 									// 绘制到真实区域
 									reRender();
+
+									// TODO: 如果使用points进行绘图，做形变时计算无从下手，所以在此，需要把points转换为图片（类似矩形）
+									
 								}
 								// 移动
 								if (action === 'move' && points.length > 1 && shape) {
