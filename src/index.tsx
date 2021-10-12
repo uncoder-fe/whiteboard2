@@ -152,9 +152,13 @@ function Stage(props: StageProps) {
 		const ox = newAxis ? newAxis[0] : axisOrigin.current[0];
 		const oy = newAxis ? newAxis[1] : axisOrigin.current[1];
 		ctx.save();
+		// 设定坐标系
 		ctx.setTransform(1, 0, 0, 1, ox, oy);
+		// 清空画布
 		ctx.clearRect(-ox, -oy, width, height);
+		// 辅助线绘制
 		if (helpLine) drawHelpAxis(ctx, 0, 0);
+		// 重新渲染所有精灵
 		for (let i = 0; i < list.length; i++) {
 			const { id, type } = list[i];
 			if (id === currentShapeId.current) continue;
