@@ -2,19 +2,17 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } f
 import { merge, fromEvent } from 'rxjs';
 import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators';
 import { RECTSIZE, CURSOR } from './common/enum';
-import { defaultPlugin, genShapePosition, getAngle, getRotateAngle2 } from './util';
+import plugins from './plugins';
+import { genShapePosition, getAngle, getRotateAngle2 } from './util';
 import { StageProps } from './interface';
 
 import styles from './index.less';
-
 // 主台
 function Stage(props: StageProps) {
 	const { onChange, height, width, style = {}, plugin = [], initHistory = [], helpLine = false } = props;
 	const [action, setAction] = useState('');
 	// 原始坐标系，viewport
 	const axisOrigin = useRef([0, 0]);
-	// 绘制动作组
-	const plugins: any = [...defaultPlugin, ...plugin];
 	// 存储记录
 	const history = useRef([]);
 	// canvas的ref
@@ -43,12 +41,12 @@ function Stage(props: StageProps) {
 		const x = ox - axisOrigin.current[0];
 		const y = oy - axisOrigin.current[1];
 		const hitArry = history.current.filter((item) => {
-			const { left, top, width, height, scaleX, scaleY } = item;
+			const { left, top, width, height, scaleX, scaleY, offsetX = 0, offsetY = 0 } = item;
 			if (
-				left - RECTSIZE < x &&
-				x < left + width * scaleX + RECTSIZE * 2 &&
-				top - RECTSIZE < y &&
-				y < top + height * scaleY + RECTSIZE * 2
+				left - RECTSIZE + offsetX < x &&
+				x < left + width * scaleX + RECTSIZE * 2 + offsetX &&
+				top - RECTSIZE + offsetY < y &&
+				y < top + height * scaleY + RECTSIZE * 2 + offsetY
 			) {
 				// 当是框的时候，检测区域增加RECTSIZE的大小，因为要计算拖拽的圆圈
 				return true;
@@ -57,16 +55,16 @@ function Stage(props: StageProps) {
 		});
 		return hitArry;
 	};
-	// 检测命中放大区域
+	// 检测命中放大/缩小区域
 	const hitSpriteGrow = (ox, oy) => {
 		const x = ox - axisOrigin.current[0];
 		const y = oy - axisOrigin.current[1];
 		const findShape = history.current.find((item) => item.id === currentShapeId.current);
 		if (!findShape) return null;
-		const { left, top, width, height, scaleX, scaleY } = findShape;
+		const { left, top, width, height, scaleX, scaleY, offsetX, offsetY } = findShape;
 		if (
-			left + (width * scaleX) / 2 - RECTSIZE / 2 < x &&
-			x < left + (width * scaleX) / 2 + RECTSIZE / 2 &&
+			left + (width * scaleX) / 2 - RECTSIZE / 2 + offsetX < x &&
+			x < left + (width * scaleX) / 2 + RECTSIZE / 2 + offsetX &&
 			top - RECTSIZE / 2 - 70 < y &&
 			y < top + RECTSIZE / 2 - 70
 		) {
@@ -74,69 +72,74 @@ function Stage(props: StageProps) {
 			return 'rotateCenter';
 		}
 		if (
-			left + (width * scaleX) / 2 - RECTSIZE / 2 < x &&
-			x < left + (width * scaleX) / 2 + RECTSIZE / 2 &&
-			top - RECTSIZE / 2 < y &&
-			y < top + RECTSIZE / 2
+			left + (width * scaleX) / 2 - RECTSIZE / 2 + offsetX < x &&
+			x < left + (width * scaleX) / 2 + RECTSIZE / 2 + offsetX &&
+			top - RECTSIZE / 2 + offsetY < y &&
+			y < top + RECTSIZE / 2 + offsetY
 		) {
 			// 上中(1)
 			return 'topCenter';
 		}
 		if (
-			left + width * scaleX - RECTSIZE / 2 < x &&
-			x < left + width * scaleX + RECTSIZE / 2 &&
-			top - RECTSIZE / 2 < y &&
-			y < top + RECTSIZE / 2
+			left + width * scaleX - RECTSIZE / 2 + offsetX < x &&
+			x < left + width * scaleX + RECTSIZE / 2 + offsetX &&
+			top - RECTSIZE / 2 + offsetY < y &&
+			y < top + RECTSIZE / 2 + offsetY
 		) {
 			// 右上(2)
 			return 'rightTop';
 		}
 		if (
-			left + width * scaleX - RECTSIZE / 2 < x &&
-			x < left + width * scaleX + RECTSIZE / 2 &&
-			top + (height * scaleY) / 2 - RECTSIZE / 2 < y &&
-			y < top + (height * scaleY) / 2 + RECTSIZE / 2
+			left + width * scaleX - RECTSIZE / 2 + offsetX < x &&
+			x < left + width * scaleX + RECTSIZE / 2 + offsetX &&
+			top + (height * scaleY) / 2 - RECTSIZE / 2 + offsetY < y &&
+			y < top + (height * scaleY) / 2 + RECTSIZE / 2 + offsetY
 		) {
 			// 右中(3)
 			return 'rightCenter';
 		}
 		if (
-			left + width * scaleX - RECTSIZE / 2 < x &&
-			x < left + width * scaleX + RECTSIZE / 2 &&
-			top + height * scaleY - RECTSIZE / 2 < y &&
-			y < top + height * scaleY + RECTSIZE / 2
+			left + width * scaleX - RECTSIZE / 2 + offsetX < x &&
+			x < left + width * scaleX + RECTSIZE / 2 + offsetX &&
+			top + height * scaleY - RECTSIZE / 2 + offsetY < y &&
+			y < top + height * scaleY + RECTSIZE / 2 + offsetY
 		) {
 			// 右下(4)
 			return 'rightBottom';
 		}
 		if (
-			left + (width * scaleX) / 2 - RECTSIZE / 2 < x &&
-			x < left + (width * scaleX) / 2 + RECTSIZE / 2 &&
-			top + height * scaleY - RECTSIZE / 2 < y &&
-			y < top + height * scaleY + RECTSIZE / 2
+			left + (width * scaleX) / 2 - RECTSIZE / 2 + offsetX < x &&
+			x < left + (width * scaleX) / 2 + RECTSIZE / 2 + offsetX &&
+			top + height * scaleY - RECTSIZE / 2 + offsetY < y &&
+			y < top + height * scaleY + RECTSIZE / 2 + offsetY
 		) {
 			// 下中(5)
 			return 'bottomCenter';
 		}
 		if (
-			left - RECTSIZE / 2 < x &&
-			x < left + RECTSIZE / 2 &&
-			top + height * scaleY - RECTSIZE / 2 < y &&
-			y < top + height * scaleY + RECTSIZE / 2
+			left - RECTSIZE / 2 + offsetX < x &&
+			x < left + RECTSIZE / 2 + offsetX &&
+			top + height * scaleY - RECTSIZE / 2 + offsetY < y &&
+			y < top + height * scaleY + RECTSIZE / 2 + offsetY
 		) {
 			// 左下(6)
 			return 'leftBottom';
 		}
 		if (
-			left - RECTSIZE / 2 < x &&
-			x < left + RECTSIZE / 2 &&
-			top + (height * scaleY) / 2 - RECTSIZE / 2 < y &&
-			y < top + (height * scaleY) / 2 + RECTSIZE / 2
+			left - RECTSIZE / 2 + offsetX < x &&
+			x < left + RECTSIZE / 2 + offsetX &&
+			top + (height * scaleY) / 2 - RECTSIZE / 2 + offsetY < y &&
+			y < top + (height * scaleY) / 2 + RECTSIZE / 2 + offsetY
 		) {
 			// 左中(7)
 			return 'leftCenter';
 		}
-		if (left - RECTSIZE / 2 < x && x < left + RECTSIZE / 2 && top - RECTSIZE / 2 < y && y < top + RECTSIZE / 2) {
+		if (
+			left - RECTSIZE / 2 + offsetX < x &&
+			x < left + RECTSIZE / 2 + offsetX &&
+			top - RECTSIZE / 2 + offsetY < y &&
+			y < top + RECTSIZE / 2 + offsetY
+		) {
 			// 左上(8)
 			return 'leftTop';
 		}
@@ -171,46 +174,76 @@ function Stage(props: StageProps) {
 		const drawAction = plugins.find((item) => item.action === shape.type);
 		drawAction.draw(ctx, shape);
 		// 绘制轮廓
-		const { left, top, width: widthR, height: heightR, scaleX, scaleY } = shape;
+		const { left, top, width: widthR, height: heightR, scaleX, scaleY, offsetX = 0, offsetY = 0 } = shape;
 		ctx.fillStyle = 'rgba(255,125,113,0.2)';
-		ctx.fillRect(left - RECTSIZE, top - RECTSIZE, widthR * scaleX + RECTSIZE * 2, heightR * scaleY + RECTSIZE * 2);
+		ctx.fillRect(
+			left - RECTSIZE + offsetX,
+			top - RECTSIZE + offsetY,
+			widthR * scaleX + RECTSIZE * 2,
+			heightR * scaleY + RECTSIZE * 2,
+		);
 		ctx.fillStyle = 'yellow';
 		ctx.beginPath();
 		// 旋转按钮
-		ctx.fillRect(left + (widthR * scaleX) / 2 - RECTSIZE / 2, top - RECTSIZE / 2 - 70, RECTSIZE, RECTSIZE);
+		ctx.fillRect(
+			left + (widthR * scaleX) / 2 - RECTSIZE / 2 + offsetX,
+			top - RECTSIZE / 2 - 70 + offsetY,
+			RECTSIZE,
+			RECTSIZE,
+		);
 		// 上中(1)
-		ctx.fillRect(left + (widthR * scaleX) / 2 - RECTSIZE / 2, top - RECTSIZE / 2, RECTSIZE, RECTSIZE);
+		ctx.fillRect(
+			left + (widthR * scaleX) / 2 - RECTSIZE / 2 + offsetX,
+			top - RECTSIZE / 2 + offsetY,
+			RECTSIZE,
+			RECTSIZE,
+		);
 		ctx.closePath();
 		// 右上(2)
-		ctx.fillRect(widthR * scaleX + left - RECTSIZE / 2, top - RECTSIZE / 2, RECTSIZE, RECTSIZE);
+		ctx.fillRect(widthR * scaleX + left - RECTSIZE / 2 + offsetX, top - RECTSIZE / 2 + offsetY, RECTSIZE, RECTSIZE);
 		ctx.closePath();
 		// 右中(3)
 		ctx.fillRect(
-			left + widthR * scaleX - RECTSIZE / 2,
-			top + (heightR * scaleY) / 2 - RECTSIZE / 2,
+			left + widthR * scaleX - RECTSIZE / 2 + offsetX,
+			top + (heightR * scaleY) / 2 - RECTSIZE / 2 + offsetY,
 			RECTSIZE,
 			RECTSIZE,
 		);
 		ctx.closePath();
 		// 右下(4)
-		ctx.fillRect(left + widthR * scaleX - RECTSIZE / 2, top + heightR * scaleY - RECTSIZE / 2, RECTSIZE, RECTSIZE);
+		ctx.fillRect(
+			left + widthR * scaleX - RECTSIZE / 2 + offsetX,
+			top + heightR * scaleY - RECTSIZE / 2 + offsetY,
+			RECTSIZE,
+			RECTSIZE,
+		);
 		ctx.closePath();
 		// 下中(5)
 		ctx.fillRect(
-			left + (widthR * scaleX) / 2 - RECTSIZE / 2,
-			top + heightR * scaleY - RECTSIZE / 2,
+			left + (widthR * scaleX) / 2 - RECTSIZE / 2 + offsetX,
+			top + heightR * scaleY - RECTSIZE / 2 + offsetY,
 			RECTSIZE,
 			RECTSIZE,
 		);
 		ctx.closePath();
 		// 左下(6)
-		ctx.fillRect(left - RECTSIZE / 2, top + heightR * scaleY - RECTSIZE / 2, RECTSIZE, RECTSIZE);
+		ctx.fillRect(
+			left - RECTSIZE / 2 + offsetX,
+			top + heightR * scaleY - RECTSIZE / 2 + offsetY,
+			RECTSIZE,
+			RECTSIZE,
+		);
 		ctx.closePath();
 		// 左中(7)
-		ctx.fillRect(left - RECTSIZE / 2, top + (heightR * scaleY) / 2 - RECTSIZE / 2, RECTSIZE, RECTSIZE);
+		ctx.fillRect(
+			left - RECTSIZE / 2 + offsetX,
+			top + (heightR * scaleY) / 2 - RECTSIZE / 2 + offsetY,
+			RECTSIZE,
+			RECTSIZE,
+		);
 		ctx.closePath();
 		// 左上(8)
-		ctx.fillRect(left - RECTSIZE / 2, top - RECTSIZE / 2, RECTSIZE, RECTSIZE);
+		ctx.fillRect(left - RECTSIZE / 2 + offsetX, top - RECTSIZE / 2 + offsetY, RECTSIZE, RECTSIZE);
 		ctx.closePath();
 		ctx.restore();
 	};
@@ -323,7 +356,7 @@ function Stage(props: StageProps) {
 			map((event: { x: number; y: number }) => {
 				let shape = null;
 				// 检测是否是新建动作
-				if (['circle', 'rect'].includes(action)) {
+				if (['circle', 'rect', 'line'].includes(action)) {
 					shape = {
 						id: Math.random().toString(36).slice(2),
 						type: action,
@@ -332,11 +365,13 @@ function Stage(props: StageProps) {
 						top: event.y,
 						width: 0,
 						height: 0,
+						offsetX: 0,
+						offsetY: 0,
 						scaleX: 1,
 						scaleY: 1,
 						flipX: false,
 						flipY: false,
-						angle: 0,
+						rotate: 0,
 					};
 				}
 				// 移动
@@ -386,7 +421,7 @@ function Stage(props: StageProps) {
 						merge($mouseup, $touchend).pipe(
 							tap(() => {
 								// 检测是否是新建动作，更新shape坐标和大小信息
-								if (['rect', 'circle'].includes(action) && shape) {
+								if (['rect', 'circle', 'line'].includes(action) && shape) {
 									// 更新矩形区域大小，在此处更新减少在绘制过程中的计算导致的性能消耗
 									const left = Math.min(shape.left, points[points.length - 1][0]);
 									const top = Math.min(shape.top, points[points.length - 1][1]);
@@ -412,32 +447,21 @@ function Stage(props: StageProps) {
 									const isGrow = hitSpriteGrow(points[0][0], points[0][1]);
 									const disX = points[points.length - 1][0] - points[0][0];
 									const disY = points[points.length - 1][1] - points[0][1];
-									const {
-										newLeft,
-										newTop,
-										newScaleX,
-										newScaleY,
-										newFlipX,
-										newFlipY,
-									} = genShapePosition({
+									const newShape = genShapePosition({
 										isGrow,
 										disX,
 										disY,
-										top: shapeR.top,
-										left: shapeR.left,
-										width: shapeR.width,
-										height: shapeR.height,
-										scaleX: shapeR.scaleX,
-										scaleY: shapeR.scaleY,
-										flipX: shapeR.flipX,
-										flipY: shapeR.flipY,
+										shape: shapeR,
 									});
-									shapeR.left = newLeft;
-									shapeR.top = newTop;
-									shapeR.scaleX = newScaleX;
-									shapeR.scaleY = newScaleY;
-									shapeR.flipX = newFlipX;
-									shapeR.flipY = newFlipY;
+									// TODO：按照ID更新
+									shapeR.left = newShape.left;
+									shapeR.top = newShape.top;
+									shapeR.scaleX = newShape.scaleX;
+									shapeR.scaleY = newShape.scaleY;
+									shapeR.flipX = newShape.flipX;
+									shapeR.flipY = newShape.flipY;
+									shapeR.offsetX = newShape.offsetX;
+									shapeR.offsetY = newShape.offsetY;
 									// console.log(shape)
 									reRender();
 								}
@@ -467,7 +491,7 @@ function Stage(props: StageProps) {
 			const disX = points[points.length - 1][0] - points[0][0];
 			const disY = points[points.length - 1][1] - points[0][1];
 			// 检测是否是新建动作
-			if (['rect', 'circle'].includes(action) && shape) {
+			if (['rect', 'circle', 'line'].includes(action) && shape) {
 				const ctx = outerContainer.current.getContext('2d');
 				ctx.clearRect(0, 0, width, height);
 				const left = Math.min(shape.left, points[points.length - 1][0]);
@@ -479,6 +503,7 @@ function Stage(props: StageProps) {
 				cloneShape.top = top;
 				cloneShape.width = widthR;
 				cloneShape.height = heightR;
+				cloneShape.points = points;
 				try {
 					drawAction.draw(ctx, cloneShape);
 				} catch (error) {
@@ -501,26 +526,21 @@ function Stage(props: StageProps) {
 					});
 					cloneShape.rotate = rotate;
 					drawShapeWithControl(cloneShape);
-				} else if (isGrow !== 'rotateCenter') {
-					const { newLeft, newTop, newScaleX, newScaleY, newFlipX, newFlipY } = genShapePosition({
+				} else {
+					const newShape = genShapePosition({
 						isGrow,
 						disX,
 						disY,
-						top: shape.top,
-						left: shape.left,
-						width: shape.width,
-						height: shape.height,
-						scaleX: shape.scaleX,
-						scaleY: shape.scaleY,
-						flipX: shape.flipX,
-						flipY: shape.flipY,
+						shape,
 					});
-					cloneShape.left = newLeft;
-					cloneShape.top = newTop;
-					cloneShape.scaleX = newScaleX;
-					cloneShape.scaleY = newScaleY;
-					cloneShape.flipX = newFlipX;
-					cloneShape.flipY = newFlipY;
+					cloneShape.left = newShape.left;
+					cloneShape.top = newShape.top;
+					cloneShape.scaleX = newShape.scaleX;
+					cloneShape.scaleY = newShape.scaleY;
+					cloneShape.flipX = newShape.flipX;
+					cloneShape.flipY = newShape.flipY;
+					cloneShape.offsetX = newShape.offsetX;
+					cloneShape.offsetY = newShape.offsetY;
 					drawShapeWithControl(cloneShape);
 				}
 			}

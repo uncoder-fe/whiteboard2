@@ -1,26 +1,3 @@
-// 默认插件
-export const defaultPlugin = [
-	{
-		action: 'hand',
-	},
-	{
-		action: 'move',
-	},
-	{
-		action: 'pencil',
-		style: {
-			strokeStyle: 'blue',
-			lineWidth: 10,
-		},
-		draw: function (ctx, points) {
-			ctx.beginPath();
-			ctx.moveTo();
-			ctx.stroke();
-			// ctx.fill()
-			ctx.restore();
-		},
-	},
-];
 export function getAngle(startX, startY, moveX, moveY) {
 	const RAD_DEG = Math.PI / 180;
 	const dx = moveX - startX;
@@ -54,13 +31,16 @@ export function getRotateAngle2(center, end) {
 
 // 计算shape位置
 export const genShapePosition = (ops) => {
-	let { isGrow, disX, disY, left, top, width, height, scaleX, scaleY, flipX, flipY, angle } = ops;
+	const { isGrow, disX, disY, shape } = ops;
+	const { left, top, width, height, scaleX, scaleY, flipX, flipY, offsetX = 0, offsetY = 0, angle } = shape;
 	let newLeft = left;
 	let newTop = top;
 	let newScaleX = scaleX;
 	let newScaleY = scaleY;
 	let newFlipX = flipX;
 	let newFlipY = flipY;
+	let newOffsetX = offsetX;
+	let newOffsetY = offsetY;
 	let increaseX = 0;
 	let increaseY = 0;
 	let newAngle = angle;
@@ -71,7 +51,6 @@ export const genShapePosition = (ops) => {
 		switch (isGrow) {
 			case 'rotateCenter':
 				console.log('旋转');
-
 				break;
 			case 'topCenter':
 				if (disY < 0) {
@@ -223,8 +202,17 @@ export const genShapePosition = (ops) => {
 		}
 	} else {
 		// 移动
-		newLeft = left + disX;
-		newTop = top + disY;
+		newOffsetX = offsetX + disX;
+		newOffsetY = offsetY + disY;
 	}
-	return { newLeft, newTop, newScaleX, newScaleY, newFlipX, newFlipY };
+	return {
+		left: newLeft,
+		top: newTop,
+		scaleX: newScaleX,
+		scaleY: newScaleY,
+		flipX: newFlipX,
+		flipY: newFlipY,
+		offsetX: newOffsetX,
+		offsetY: newOffsetY,
+	};
 };

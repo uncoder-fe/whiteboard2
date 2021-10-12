@@ -6,7 +6,7 @@ module.exports = {
 	entry: {
 		app: './src/example/app.tsx',
 	},
-	devtool: 'source-map',
+	devtool: 'inline-source-map',
 	devServer: {
 		port: 4000,
 		host: '0.0.0.0',

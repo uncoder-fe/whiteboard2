@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import ReactDOM from 'react-dom';
 import Stage from '../index';
-import plugins from '../plugins';
 import icon from '../default.jpg';
 import './app.css';
 
@@ -10,6 +9,7 @@ const App = () => {
 	return (
 		<div>
 			<div>
+				<button onClick={() => cRef.current.selectAction('line')}>直线</button>
 				<button onClick={() => cRef.current.selectAction('rect')}>矩形</button>
 				<button onClick={() => cRef.current.selectAction('circle')}>圆圈</button>
 				<button onClick={() => cRef.current.selectAction('move')}>移动</button>
@@ -25,7 +25,6 @@ const App = () => {
 				}}
 				height={800}
 				width={800}
-				plugin={plugins}
 				helpLine
 			/>
 			<img src={icon} alt="" id="image" style={{ display: 'none' }} />
