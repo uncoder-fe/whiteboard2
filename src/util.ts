@@ -216,3 +216,36 @@ export const genShapePosition = (ops) => {
 		offsetY: newOffsetY,
 	};
 };
+
+// shape转图片
+export function shapeToBase64(shape) {
+	const { points, left, top, height, width, type } = shape;
+	const len = points.length;
+	const padding = 5;
+	const offsetX = left - padding;
+	const offsetY = top - padding;
+	const canvas = document.createElement('canvas');
+	canvas.setAttribute('width', `${width + 2 * padding}px`);
+	canvas.setAttribute('height', `${height + 4 * padding}px`);
+	const ctx = canvas.getContext('2d');
+	// 填充透明背景
+	ctx.fillStyle = 'rgba(255, 255, 255, 0)';
+	// 线条颜色
+	ctx.strokeStyle = 'green';
+	if (type === 'line') {
+		ctx.moveTo(points[0][0] - offsetX, points[0][1] - offsetY);
+		ctx.lineTo(points[len - 1][0] - offsetX, points[len - 1][1] - offsetY);
+	} else {
+		for (let i = 0; i < len; i++) {
+			const start = points[i];
+			const end = points[i + 1];
+			ctx.moveTo(start[0] - offsetX, start[1] - offsetY);
+			if (end) {
+				ctx.lineTo(end[0] - offsetX, end[1] - offsetY);
+			}
+		}
+	}
+	ctx.stroke();
+	const base64 = canvas.toDataURL('image/png', 1.0);
+	return base64;
+}

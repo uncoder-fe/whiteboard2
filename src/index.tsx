@@ -3,7 +3,7 @@ import { merge, fromEvent } from 'rxjs';
 import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators';
 import { RECTSIZE, CURSOR } from './common/enum';
 import plugins from './plugins';
-import { genShapePosition, getAngle, getRotateAngle2 } from './util';
+import { genShapePosition, getAngle, getRotateAngle2, shapeToBase64 } from './util';
 import { StageProps } from './interface';
 
 import styles from './index.less';
@@ -160,11 +160,21 @@ function Stage(props: StageProps) {
 		if (helpLine) drawHelpAxis(ctx, 0, 0);
 		// 重新渲染所有精灵
 		for (let i = 0; i < list.length; i++) {
-			const { id, type } = list[i];
+			const { id, type, base64 } = list[i];
 			if (id === currentShapeId.current) continue;
 			// 检测是否是新建动作，更新shape的路径信息
 			const drawAction = plugins.find((item) => item.action === type);
 			drawAction.draw(ctx, list[i]);
+			// 在内存中加载图像数据
+			if (type === 'line') {
+				let image = document.getElementById(`${id}`) as any;
+				if (!image && base64) {
+					image = new Image();
+					image.src = base64;
+					image.setAttribute('id', id);
+					document.querySelector('#cache-images').appendChild(image);
+				}
+			}
 		}
 		ctx.restore();
 	};
@@ -382,6 +392,7 @@ function Stage(props: StageProps) {
 						flipX: false,
 						flipY: false,
 						rotate: 0,
+						base64: '',
 					};
 				}
 				// 移动
@@ -442,6 +453,9 @@ function Stage(props: StageProps) {
 									shape.width = widthR;
 									shape.height = heightR;
 									shape.points = points;
+									if (action === 'line') {
+										shape.base64 = shapeToBase64(shape);
+									}
 									// 清空事件屏
 									const ctx = outerContainer.current.getContext('2d');
 									ctx.clearRect(0, 0, width, height);
@@ -449,9 +463,6 @@ function Stage(props: StageProps) {
 									history.current = [...history.current, shape];
 									// 绘制到真实区域
 									reRender();
-
-									// TODO: 如果使用points进行绘图，做形变时计算无从下手，所以在此，需要把points转换为图片（类似矩形）
-
 								}
 								// 移动
 								if (action === 'move' && points.length > 1 && shape) {
@@ -572,6 +583,7 @@ function Stage(props: StageProps) {
 	}, [action]);
 	return (
 		<div className={styles.stage} style={{ height, width, background: 'transparent', ...style }}>
+			<div style={{ display: 'none' }} id="cache-images"></div>
 			<canvas ref={innerContainer} height={height} width={width} />
 			<canvas ref={outerContainer} height={height} width={width} />
 		</div>
