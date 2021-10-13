@@ -166,7 +166,7 @@ function Stage(props: StageProps) {
 			const drawAction = plugins.find((item) => item.action === type);
 			drawAction.draw(ctx, list[i]);
 			// 在内存中加载图像数据
-			if (type === 'line') {
+			if (['line', 'pencil'].includes(type)) {
 				let image = document.getElementById(`${id}`) as any;
 				if (!image && base64) {
 					image = new Image();
@@ -376,7 +376,7 @@ function Stage(props: StageProps) {
 			map((event: { x: number; y: number }) => {
 				let shape = null;
 				// 检测是否是新建动作
-				if (['circle', 'rect', 'line'].includes(action)) {
+				if (['circle', 'rect', 'line', 'pencil'].includes(action)) {
 					shape = {
 						id: Math.random().toString(36).slice(2),
 						type: action,
@@ -442,18 +442,27 @@ function Stage(props: StageProps) {
 						merge($mouseup, $touchend).pipe(
 							tap(() => {
 								// 检测是否是新建动作，更新shape坐标和大小信息
-								if (['rect', 'circle', 'line'].includes(action) && shape) {
+								if (['rect', 'circle', 'line', 'pencil'].includes(action) && shape) {
 									// 更新矩形区域大小，在此处更新减少在绘制过程中的计算导致的性能消耗
-									const left = Math.min(shape.left, points[points.length - 1][0]);
-									const top = Math.min(shape.top, points[points.length - 1][1]);
-									const widthR = Math.abs(points[points.length - 1][0] - shape.left);
-									const heightR = Math.abs(points[points.length - 1][1] - shape.top);
+									let left = Math.min(shape.left, points[points.length - 1][0]);
+									let top = Math.min(shape.top, points[points.length - 1][1]);
+									let widthR = Math.abs(points[points.length - 1][0] - shape.left);
+									let heightR = Math.abs(points[points.length - 1][1] - shape.top);
+									if (action === 'pencil') {
+										// 铅笔的话，大小，左上角顶点特殊处理
+										left = Math.min(...points.map((point) => point[0]));
+										top = Math.min(...points.map((point) => point[1]));
+										const right = Math.max(...points.map((point) => point[1]));
+										const bottom = Math.max(...points.map((point) => point[1]));
+										widthR = Math.abs(right - left);
+										heightR = Math.abs(bottom - top);
+									}
 									shape.left = left - axisOrigin.current[0];
 									shape.top = top - axisOrigin.current[1];
 									shape.width = widthR;
 									shape.height = heightR;
 									shape.points = points;
-									if (action === 'line') {
+									if (['line', 'pencil'].includes(action)) {
 										shape.base64 = shapeToBase64(shape);
 									}
 									// 清空事件屏
@@ -515,13 +524,22 @@ function Stage(props: StageProps) {
 			const disX = points[points.length - 1][0] - points[0][0];
 			const disY = points[points.length - 1][1] - points[0][1];
 			// 检测是否是新建动作
-			if (['rect', 'circle', 'line'].includes(action) && shape) {
+			if (['rect', 'circle', 'line', 'pencil'].includes(action) && shape) {
 				const ctx = outerContainer.current.getContext('2d');
 				ctx.clearRect(0, 0, width, height);
-				const left = Math.min(shape.left, points[points.length - 1][0]);
-				const top = Math.min(shape.top, points[points.length - 1][1]);
-				const widthR = Math.abs(points[points.length - 1][0] - shape.left);
-				const heightR = Math.abs(points[points.length - 1][1] - shape.top);
+				let left = Math.min(shape.left, points[points.length - 1][0]);
+				let top = Math.min(shape.top, points[points.length - 1][1]);
+				let widthR = Math.abs(points[points.length - 1][0] - shape.left);
+				let heightR = Math.abs(points[points.length - 1][1] - shape.top);
+				if (action === 'pencil') {
+					// 铅笔的话，大小，左上角顶点特殊处理
+					left = Math.min(...points.map((point) => point[0]));
+					top = Math.min(...points.map((point) => point[1]));
+					const right = Math.max(...points.map((point) => point[1]));
+					const bottom = Math.max(...points.map((point) => point[1]));
+					widthR = Math.abs(right - left);
+					heightR = Math.abs(bottom - top);
+				}
 				// 更新信息
 				cloneShape.left = left;
 				cloneShape.top = top;

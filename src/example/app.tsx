@@ -10,6 +10,7 @@ const App = () => {
 		<div>
 			<div>
 				<button onClick={() => cRef.current.selectAction('line')}>直线</button>
+				<button onClick={() => cRef.current.selectAction('pencil')}>铅笔</button>
 				<button onClick={() => cRef.current.selectAction('rect')}>矩形</button>
 				<button onClick={() => cRef.current.selectAction('circle')}>圆圈</button>
 				<button onClick={() => cRef.current.selectAction('move')}>移动</button>

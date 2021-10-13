@@ -232,6 +232,7 @@ export function shapeToBase64(shape) {
 	ctx.fillStyle = 'rgba(255, 255, 255, 0)';
 	// 线条颜色
 	ctx.strokeStyle = 'green';
+	ctx.lineWidth = 2;
 	if (type === 'line') {
 		ctx.moveTo(points[0][0] - offsetX, points[0][1] - offsetY);
 		ctx.lineTo(points[len - 1][0] - offsetX, points[len - 1][1] - offsetY);
