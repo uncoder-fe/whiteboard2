@@ -22,4 +22,4 @@ npm start
 
 # 截图
 
-![alt 截图](https://github.com/uncoder-fe/whiteboard2/blob/master/screenshot/6CF3FDAD-2452-4005-9264-6529DCB8D4E5.png '截图')
+![alt 截图](https://github.com/uncoder-fe/whiteboard2/blob/master/screenshot/screenshot-20211015-161550.png '截图')
