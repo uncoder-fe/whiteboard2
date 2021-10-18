@@ -221,7 +221,7 @@ export const genShapePosition = (ops) => {
 export function pointsToBase64(shape) {
 	const { points, height, width, type } = shape;
 	const len = points.length;
-	const padding = 5;
+	const padding = 0;
 	// 这里脱离原shape的坐标，只为了找到原点（0，0），获取偏移量
 	const left = Math.min(...points.map((point) => point[0])) || 0;
 	const top = Math.min(...points.map((point) => point[1])) || 0;
