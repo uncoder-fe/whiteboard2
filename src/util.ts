@@ -235,6 +235,7 @@ export function pointsToBase64(shape) {
 	// 线条颜色
 	ctx.strokeStyle = 'green';
 	ctx.lineWidth = 2;
+	ctx.beginPath();
 	if (type === 'line') {
 		ctx.moveTo(points[0][0] - offsetX, points[0][1] - offsetY);
 		ctx.lineTo(points[len - 1][0] - offsetX, points[len - 1][1] - offsetY);
@@ -242,13 +243,15 @@ export function pointsToBase64(shape) {
 		for (let i = 0; i < len; i++) {
 			const start = points[i];
 			const end = points[i + 1];
-			ctx.moveTo(start[0] - offsetX, start[1] - offsetY);
 			if (end) {
+				ctx.moveTo(start[0] - offsetX, start[1] - offsetY);
 				ctx.lineTo(end[0] - offsetX, end[1] - offsetY);
 			}
 		}
 	}
+	ctx.closePath();
 	ctx.stroke();
 	const base64 = canvas.toDataURL('image/png', 1.0);
+	// console.log('base64', base64);
 	return base64;
 }

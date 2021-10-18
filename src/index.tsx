@@ -452,7 +452,7 @@ function Stage(props: StageProps) {
 										// 铅笔的话，大小，左上角顶点特殊处理
 										left = Math.min(...points.map((point) => point[0]));
 										top = Math.min(...points.map((point) => point[1]));
-										const right = Math.max(...points.map((point) => point[1]));
+										const right = Math.max(...points.map((point) => point[0]));
 										const bottom = Math.max(...points.map((point) => point[1]));
 										widthR = Math.abs(right - left);
 										heightR = Math.abs(bottom - top);
