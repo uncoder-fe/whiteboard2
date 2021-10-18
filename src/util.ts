@@ -217,11 +217,13 @@ export const genShapePosition = (ops) => {
 	};
 };
 
-// shape转图片
-export function shapeToBase64(shape) {
-	const { points, left, top, height, width, type } = shape;
+// shape转图片，坐标点转图片
+export function pointsToBase64(shape) {
+	const { points, height, width, type } = shape;
 	const len = points.length;
 	const padding = 5;
+	const left = Math.min(...points.map((point) => point[0])) || 0;
+	const top = Math.min(...points.map((point) => point[1])) || 0;
 	const offsetX = left - padding;
 	const offsetY = top - padding;
 	const canvas = document.createElement('canvas');

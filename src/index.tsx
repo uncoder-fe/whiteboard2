@@ -3,7 +3,7 @@ import { merge, fromEvent } from 'rxjs';
 import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators';
 import { RECTSIZE, CURSOR } from './common/enum';
 import plugins from './plugins';
-import { genShapePosition, getAngle, getRotateAngle2, shapeToBase64 } from './util';
+import { genShapePosition, getAngle, getRotateAngle2, pointsToBase64 } from './util';
 import { StageProps } from './interface';
 
 import styles from './index.less';
@@ -151,7 +151,7 @@ function Stage(props: StageProps) {
 		const ctx = innerContainer.current.getContext('2d');
 		const ox = newAxis ? newAxis[0] : axisOrigin.current[0];
 		const oy = newAxis ? newAxis[1] : axisOrigin.current[1];
-		ctx.save();
+		// ctx.save();
 		// 设定坐标系
 		ctx.setTransform(1, 0, 0, 1, ox, oy);
 		// 清空画布
@@ -176,7 +176,7 @@ function Stage(props: StageProps) {
 				}
 			}
 		}
-		ctx.restore();
+		// ctx.restore();
 	};
 	// 渲染六角定位点
 	const drawShapeWithControl = (shape) => {
@@ -463,7 +463,7 @@ function Stage(props: StageProps) {
 									shape.height = heightR;
 									shape.points = points;
 									if (['line', 'pencil'].includes(action)) {
-										shape.base64 = shapeToBase64(shape);
+										shape.base64 = pointsToBase64(shape);
 									}
 									// 清空事件屏
 									const ctx = outerContainer.current.getContext('2d');

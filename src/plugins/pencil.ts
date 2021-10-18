@@ -37,17 +37,8 @@ const pencil: plugin = {
 			ctx.closePath();
 			ctx.restore();
 		} else {
-			// 渲染图片，异步拿取，在更改原点时候，渲染异常
-			// const image = await new Promise((resolve, reject) => {
-			// 	const img = new Image();
-			// 	img.src = base64;
-			// 	img.onload = function(){
-			// 		resolve(this);
-			// 	};
-			// });
 			let image = document.getElementById(`${id}`) as any;
 			if (!image) {
-				// 兼容：：：手工新建的直线，采用
 				image = await new Promise((resolve, reject) => {
 					const img = new Image();
 					img.src = base64;

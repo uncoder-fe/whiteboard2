@@ -33,35 +33,24 @@ const line: plugin = {
 			ctx.closePath();
 			ctx.restore();
 		} else {
-			// 渲染图片，异步拿取，在更改原点时候，渲染异常
-			// const image = await new Promise((resolve, reject) => {
-			// 	const img = new Image();
-			// 	img.src = base64;
-			// 	img.onload = function(){
-			// 		resolve(this);
-			// 	};
-			// });
+			// 优先从缓存读取图片
 			let image = document.getElementById(`${id}`) as any;
 			if (!image) {
-				// 兼容：：：手工新建的直线，采用
+				// 渲染图片，异步拿取，在更改原点时候，渲染异常
 				image = await new Promise((resolve, reject) => {
 					const img = new Image();
 					img.src = base64;
-					img.onload = function(){
+					img.onload = function () {
 						resolve(this);
 					};
 				});
 			}
+			const x = flipX ? -(left + width * scaleX + offsetX) : left + offsetX;
+			const y = flipY ? -(top + height * scaleY + offsetY) : top + offsetY;
 			ctx.save();
 			// 控制镜像反转
 			ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-			ctx.drawImage(
-				image,
-				flipX ? -(left + width * scaleX + offsetX) : left + offsetX,
-				flipY ? -(top + height * scaleY + offsetY) : top + offsetY,
-				width * scaleX,
-				height * scaleY,
-			);
+			ctx.drawImage(image, x, y, width * scaleX, height * scaleY);
 			ctx.restore();
 		}
 	},
