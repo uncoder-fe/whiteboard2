@@ -228,14 +228,15 @@ export function pointsToBase64(shape) {
 	const offsetX = left - padding;
 	const offsetY = top - padding;
 	const canvas = document.createElement('canvas');
-	canvas.setAttribute('width', `${width + 2 * padding}px`);
-	canvas.setAttribute('height', `${height + 4 * padding}px`);
+	canvas.setAttribute('width', `${width}px`);
+	canvas.setAttribute('height', `${height}px`);
 	const ctx = canvas.getContext('2d');
 	// 填充透明背景
 	ctx.fillStyle = 'rgba(255, 255, 255, 0)';
 	// 线条颜色
-	ctx.strokeStyle = 'green';
+	ctx.strokeStyle = 'black';
 	ctx.lineWidth = 2;
+	ctx.lineCap = 'round';
 	ctx.beginPath();
 	if (type === 'line') {
 		ctx.moveTo(points[0][0] - offsetX, points[0][1] - offsetY);

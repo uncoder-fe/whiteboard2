@@ -11,7 +11,7 @@
 
 ```
 npm i
-npm start
+npm run start
 ```
 
 # 功能

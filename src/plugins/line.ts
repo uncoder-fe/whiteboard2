@@ -26,6 +26,7 @@ const line: plugin = {
 			ctx.save();
 			ctx.strokeStyle = 'green';
 			ctx.lineWidth = 2;
+			ctx.lineCap = 'round';
 			ctx.beginPath();
 			ctx.moveTo(x + offsetX, y + offsetY);
 			ctx.lineTo(endX + offsetX, endY + offsetY);
