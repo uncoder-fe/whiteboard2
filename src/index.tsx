@@ -3,7 +3,7 @@ import { merge, fromEvent } from 'rxjs';
 import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators';
 import { RECTSIZE, CURSOR } from './common/enum';
 import plugins from './plugins';
-import { genShapePosition, getAngle, getRotateAngle2, pointsToBase64 } from './util';
+import { genShapePosition, getRotateAngle2, pointsToBase64 } from './util';
 import { StageProps, drawStyleI } from './interface';
 
 import styles from './index.less';
@@ -512,6 +512,18 @@ function Stage(props: StageProps) {
 									shapeR.flipY = newShape.flipY;
 									shapeR.offsetX = newShape.offsetX;
 									shapeR.offsetY = newShape.offsetY;
+									if (isGrow === 'rotateCenter') {
+										const center = {
+											x: shapeR.left + (shapeR.width * shapeR.scaleX) / 2,
+											y: shapeR.top + (shapeR.height * shapeR.scaleY) / 2,
+										};
+										// 旋转
+										const rotate = getRotateAngle2(center, {
+											x: shapeR.points[shapeR.points.length - 1][0],
+											y: shapeR.points[shapeR.points.length - 1][1],
+										});
+										shapeR.rotate = rotate;
+									}
 									// console.log(shape)
 									reRender();
 								}
