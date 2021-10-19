@@ -219,10 +219,10 @@ export const genShapePosition = (ops) => {
 
 // shape转图片，坐标点转图片
 export function pointsToBase64(shape) {
-	const { points, height, width, type } = shape;
+	const { points, height, width, type, drawStyle } = shape;
 	const len = points.length;
-	// 扩展大小，防止线条切边
-	const padding = 4;
+	// 扩展大小，防止线条切边，4
+	const padding = drawStyle.lineWidth * 2;
 	// 这里脱离原shape的坐标，只为了找到原点（0，0），获取偏移量
 	const left = Math.min(...points.map((point) => point[0])) || 0;
 	const top = Math.min(...points.map((point) => point[1])) || 0;
@@ -235,9 +235,9 @@ export function pointsToBase64(shape) {
 	// 填充透明背景
 	ctx.fillStyle = 'rgba(255, 255, 255, 0)';
 	// 线条颜色
-	ctx.strokeStyle = 'black';
-	ctx.lineWidth = 2;
-	ctx.lineCap = 'round';
+	for (const style in drawStyle) {
+		ctx[style] = drawStyle[style];
+	}
 	ctx.beginPath();
 	if (type === 'line') {
 		ctx.moveTo(points[0][0] - offsetX, points[0][1] - offsetY);

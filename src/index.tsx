@@ -4,12 +4,12 @@ import { tap, map, switchMap, takeUntil, skipWhile } from 'rxjs/operators';
 import { RECTSIZE, CURSOR } from './common/enum';
 import plugins from './plugins';
 import { genShapePosition, getAngle, getRotateAngle2, pointsToBase64 } from './util';
-import { StageProps } from './interface';
+import { StageProps, drawStyleI } from './interface';
 
 import styles from './index.less';
 // 主台
 function Stage(props: StageProps) {
-	const { onChange, height, width, style = {}, plugin = [], initHistory = [], helpLine = false } = props;
+	const { onChange, height, width, initHistory = [], helpLine = false } = props;
 	const [action, setAction] = useState('');
 	// 原始坐标系，viewport
 	const axisOrigin = useRef([0, 0]);
@@ -20,6 +20,12 @@ function Stage(props: StageProps) {
 	const innerContainer = useRef(null);
 	// 当前选中的shape
 	const currentShapeId = useRef(null);
+	// 默认样式
+	const [drawStyle, setDrawStyle] = useState<drawStyleI>({
+		strokeStyle: 'black',
+		lineWidth: 2,
+		lineCap: 'round',
+	});
 	// 辅助线
 	const drawHelpAxis = (ctx, x, y) => {
 		ctx.save();
@@ -292,9 +298,14 @@ function Stage(props: StageProps) {
 		// 回调数据结果
 		if (onChange && history.current.length) onChange(history.current);
 	};
+	// 注册绘制样式事件
+	const setStyle = (newStyle) => {
+		setDrawStyle(Object.assign(drawStyle, newStyle));
+	};
 	useImperativeHandle(props.forwardedRef, () => ({
 		clean,
 		scale,
+		setStyle,
 		selectAction: (nextAction) => setAction(nextAction),
 	}));
 	// 初始化
@@ -393,6 +404,7 @@ function Stage(props: StageProps) {
 						flipY: false,
 						rotate: 0,
 						base64: '',
+						drawStyle: Object.assign({}, drawStyle),
 					};
 				}
 				// 移动
@@ -458,9 +470,9 @@ function Stage(props: StageProps) {
 										heightR = Math.abs(bottom - top);
 									}
 									if (['line', 'pencil'].includes(action)) {
-										// 扩展大小，防止线条切边
-										widthR += 8;
-										heightR += 8;
+										// 扩展大小，防止线条切边，8
+										widthR += shape.drawStyle.lineWidth * 4;
+										heightR += shape.drawStyle.lineWidth * 4;
 									}
 									shape.left = left - axisOrigin.current[0];
 									shape.top = top - axisOrigin.current[1];
@@ -605,7 +617,7 @@ function Stage(props: StageProps) {
 		};
 	}, [action]);
 	return (
-		<div className={styles.stage} style={{ height, width, background: 'transparent', ...style }}>
+		<div className={styles.stage} style={{ height, width, background: 'transparent' }}>
 			<div style={{ display: 'none' }} id="cache-images"></div>
 			<canvas ref={innerContainer} height={height} width={width} />
 			<canvas ref={outerContainer} height={height} width={width} />

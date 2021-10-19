@@ -19,6 +19,17 @@ const App = () => {
 				<button onClick={() => cRef.current.scale('shrink')}>缩小</button>
 				<button onClick={() => cRef.current.clean()}>清空</button>
 			</div>
+			<div>
+				<button onClick={() => cRef.current.setStyle({ strokeStyle: 'red' })}>红色</button>
+				<button onClick={() => cRef.current.setStyle({ strokeStyle: 'green' })}>绿色</button>
+				<button onClick={() => cRef.current.setStyle({ strokeStyle: 'blue' })}>蓝色</button>
+				<button onClick={() => cRef.current.setStyle({ strokeStyle: 'yellow' })}>黄色</button>
+			</div>
+			<div>
+				<button onClick={() => cRef.current.setStyle({ lineWidth: 2 })}>2号</button>
+				<button onClick={() => cRef.current.setStyle({ lineWidth: 4 })}>4号</button>
+				<button onClick={() => cRef.current.setStyle({ lineWidth: 8 })}>8号</button>
+			</div>
 			<Stage
 				ref={cRef}
 				onChange={(data) => {

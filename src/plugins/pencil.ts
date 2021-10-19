@@ -18,13 +18,14 @@ const pencil: plugin = {
 			offsetY,
 			base64,
 			points,
+			drawStyle,
 		} = shape;
 		if (!base64) {
 			const len = points.length;
 			ctx.save();
-			ctx.strokeStyle = 'black';
-			ctx.lineWidth = 2;
-			ctx.lineCap = 'round';
+			for (const style in drawStyle) {
+				ctx[style] = drawStyle[style];
+			}
 			ctx.beginPath();
 			for (let i = 0; i < len; i++) {
 				const start = points[i];
@@ -53,8 +54,9 @@ const pencil: plugin = {
 			ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
 			const x = flipX ? -(left + width * scaleX + offsetX) : left + offsetX;
 			const y = flipY ? -(top + height * scaleY + offsetY) : top + offsetY;
-			// 扩展大小，防止线条切边
-			ctx.drawImage(image, x - 4, y - 4, width * scaleX, height * scaleY);
+			// 扩展大小，防止线条切边，4
+			const v = drawStyle.lineWidth * 2;
+			ctx.drawImage(image, x - v, y - v, width * scaleX, height * scaleY);
 			ctx.restore();
 		}
 	},
