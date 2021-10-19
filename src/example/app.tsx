@@ -26,9 +26,9 @@ const App = () => {
 				<button onClick={() => cRef.current.setStyle({ strokeStyle: 'yellow' })}>黄色</button>
 			</div>
 			<div>
-				<button onClick={() => cRef.current.setStyle({ lineWidth: 2 })}>2号</button>
-				<button onClick={() => cRef.current.setStyle({ lineWidth: 4 })}>4号</button>
-				<button onClick={() => cRef.current.setStyle({ lineWidth: 8 })}>8号</button>
+				<button onClick={() => cRef.current.setStyle({ lineWidth: 2 })}>2号笔</button>
+				<button onClick={() => cRef.current.setStyle({ lineWidth: 4 })}>4号笔</button>
+				<button onClick={() => cRef.current.setStyle({ lineWidth: 8 })}>8号笔</button>
 			</div>
 			<Stage
 				ref={cRef}
