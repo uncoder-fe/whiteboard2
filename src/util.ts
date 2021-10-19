@@ -224,8 +224,12 @@ export function pointsToBase64(shape) {
 	// 扩展大小，防止线条切边，4
 	const padding = drawStyle.lineWidth * 2;
 	// 这里脱离原shape的坐标，只为了找到原点（0，0），获取偏移量
-	const left = Math.min(...points.map((point) => point[0])) || 0;
-	const top = Math.min(...points.map((point) => point[1])) || 0;
+	let left = Math.min(points[0][0], points[len - 1][0]) || 0;
+	let top = Math.min(points[0][1], points[len - 1][1]) || 0;
+	if (type === 'pencil') {
+		left = Math.min(...points.map((point) => point[0])) || 0;
+		top = Math.min(...points.map((point) => point[1])) || 0;
+	}
 	const offsetX = left - padding;
 	const offsetY = top - padding;
 	const canvas = document.createElement('canvas');
