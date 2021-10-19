@@ -53,7 +53,8 @@ const pencil: plugin = {
 			ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
 			const x = flipX ? -(left + width * scaleX + offsetX) : left + offsetX;
 			const y = flipY ? -(top + height * scaleY + offsetY) : top + offsetY;
-			ctx.drawImage(image, x, y, width * scaleX, height * scaleY);
+			// 扩展大小，防止线条切边
+			ctx.drawImage(image, x - 4, y - 4, width * scaleX, height * scaleY);
 			ctx.restore();
 		}
 	},

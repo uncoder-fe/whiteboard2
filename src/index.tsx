@@ -457,6 +457,11 @@ function Stage(props: StageProps) {
 										widthR = Math.abs(right - left);
 										heightR = Math.abs(bottom - top);
 									}
+									if (['line', 'pencil'].includes(action)) {
+										// 扩展大小，防止线条切边
+										widthR += 8;
+										heightR += 8;
+									}
 									shape.left = left - axisOrigin.current[0];
 									shape.top = top - axisOrigin.current[1];
 									shape.width = widthR;
