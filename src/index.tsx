@@ -317,7 +317,7 @@ function Stage(props: StageProps) {
 	}, []);
 	// 核心事件流
 	useEffect(() => {
-		if (['rect', 'circle', 'moveCanvas'].includes(action)) {
+		if (['rect', 'circle', 'line', 'pencil', 'moveCanvas'].includes(action)) {
 			// 切换为绘图模式时，清空
 			currentShapeId.current = null;
 			const ctx = outerContainer.current.getContext('2d');
