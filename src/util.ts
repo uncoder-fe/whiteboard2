@@ -215,6 +215,7 @@ export const genShapePosition = (ops) => {
 
 // shape转图片，坐标点转图片
 export function pointsToBase64(shape) {
+	// TODO：生成二倍高清图
 	const { points, height, width, type, drawStyle } = shape;
 	const len = points.length;
 	// 扩展大小，防止线条切边，4
@@ -223,6 +224,7 @@ export function pointsToBase64(shape) {
 	let left = Math.min(points[0][0], points[len - 1][0]) || 0;
 	let top = Math.min(points[0][1], points[len - 1][1]) || 0;
 	if (type === 'pencil') {
+		// 对于铅笔，最左边的顶点，是最小值
 		left = Math.min(...points.map((point) => point[0])) || 0;
 		top = Math.min(...points.map((point) => point[1])) || 0;
 	}

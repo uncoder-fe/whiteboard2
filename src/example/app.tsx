@@ -39,7 +39,7 @@ const App = () => {
 				ref={cRef}
 				onChange={(data) => { /*console.log(data);*/ }}
 				height={800}
-				width={800}
+				width={1200}
 				helpLine
 			/>
 			<img src={icon} alt="" id="image" style={{ display: 'none' }} />

@@ -38,7 +38,6 @@ function Stage(props: StageProps) {
 		ctx.moveTo(x, height / 2 + y);
 		ctx.lineTo(x + width, height / 2 + y);
 		ctx.stroke();
-		ctx.strokeRect(x, y, width, height);
 		ctx.fillText('(0,0)', x, y + 10);
 		ctx.restore();
 	};
