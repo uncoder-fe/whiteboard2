@@ -1,5 +1,5 @@
 export interface plugin {
+	type?: string;
 	action?: string;
-	style?: any;
 	draw?: any;
 }

@@ -1,6 +1,7 @@
 import { plugin } from './type.d';
 
 const line: plugin = {
+	type: 'render',
 	action: 'line',
 	draw: async (ctx, shape) => {
 		const { id, left, top, height, width, scaleX, scaleY, flipX, flipY, rotate, base64, points, drawStyle } = shape;

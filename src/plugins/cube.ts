@@ -1,6 +1,7 @@
 import { plugin } from './type.d';
 
 const cube: plugin = {
+	type: 'render',
 	action: 'cube',
 	draw: function (ctx, shape) {
 		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;

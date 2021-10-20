@@ -281,7 +281,9 @@ function Stage(props: StageProps) {
 	}, []);
 	// 核心事件流
 	useEffect(() => {
-		if (['rect', 'circle', 'line', 'pencil', 'moveCanvas'].includes(action)) {
+		// 检测是否是新建动作，更新shape的路径信息
+		const drawAction = plugins.find((item) => item.action === action);
+		if (drawAction && drawAction.type !== 'render') {
 			// 切换为绘图模式时，清空
 			currentShapeId.current = null;
 			const ctx = outerContainer.current.getContext('2d');
@@ -295,8 +297,6 @@ function Stage(props: StageProps) {
 		} else {
 			outerContainer.current.parentNode.style.pointerEvents = 'none';
 		}
-		// 检测是否是新建动作，更新shape的路径信息
-		const drawAction = plugins.find((item) => item.action === action);
 		// 鼠标和触控事件合并
 		const $mousedown = fromEvent(outerContainer.current, 'mousedown').pipe(
 			map((event: any) => {
@@ -351,7 +351,8 @@ function Stage(props: StageProps) {
 			map((event: { x: number; y: number }) => {
 				let shape = null;
 				// 检测是否是新建动作
-				if (['circle', 'rect', 'line', 'pencil', 'cube'].includes(action)) {
+				const drawAction = plugins.find((item) => item.action === action);
+				if (drawAction && drawAction.type === 'render') {
 					shape = {
 						id: Math.random().toString(36).slice(2),
 						type: action,
@@ -416,7 +417,8 @@ function Stage(props: StageProps) {
 						merge($mouseup, $touchend).pipe(
 							tap(() => {
 								// 检测是否是新建动作，更新shape坐标和大小信息
-								if (['rect', 'circle', 'line', 'pencil', 'cube'].includes(action) && shape) {
+								const drawAction = plugins.find((item) => item.action === action);
+								if (drawAction && drawAction.type === 'render' && shape) {
 									// 更新矩形区域大小，在此处更新减少在绘制过程中的计算导致的性能消耗
 									let left = Math.min(shape.left, points[points.length - 1][0]);
 									let top = Math.min(shape.top, points[points.length - 1][1]);
@@ -512,8 +514,9 @@ function Stage(props: StageProps) {
 			const cloneShape = JSON.parse(JSON.stringify(shape));
 			const disX = points[points.length - 1][0] - points[0][0];
 			const disY = points[points.length - 1][1] - points[0][1];
-			// 检测是否是新建动作
-			if (['rect', 'circle', 'line', 'pencil', 'cube'].includes(action) && shape) {
+			// 检测是否是新建动作，更新shape坐标和大小信息
+			const drawAction = plugins.find((item) => item.action === action);
+			if (drawAction && drawAction.type === 'render' && shape) {
 				const ctx = outerContainer.current.getContext('2d');
 				ctx.clearRect(0, 0, width, height);
 				let left = Math.min(shape.left, points[points.length - 1][0]);

@@ -1,6 +1,7 @@
 import { plugin } from './type.d';
 
 const pencil: plugin = {
+	type: 'render',
 	action: 'pencil',
 	draw: async (ctx, shape) => {
 		const {

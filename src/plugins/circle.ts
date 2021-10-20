@@ -1,6 +1,7 @@
 import { plugin } from './type.d';
 
 const rect: plugin = {
+	type: 'render',
 	action: 'circle',
 	draw: function (ctx, shape) {
 		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;
