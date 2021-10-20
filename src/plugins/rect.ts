@@ -2,7 +2,7 @@ import { plugin } from './type.d';
 
 const rect: plugin = {
 	action: 'rect',
-	draw: function (ctx, shape, points) {
+	draw: function (ctx, shape) {
 		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;
 		ctx.save();
 		ctx.strokeStyle = 'blue';

@@ -2,7 +2,7 @@ import { plugin } from './type.d';
 
 const rect: plugin = {
 	action: 'circle',
-	draw: function (ctx, shape, points) {
+	draw: function (ctx, shape) {
 		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;
 		const centerX = left + (width * scaleX) / 2;
 		const centerY = top + (height * scaleY) / 2;

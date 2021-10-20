@@ -351,7 +351,7 @@ function Stage(props: StageProps) {
 			map((event: { x: number; y: number }) => {
 				let shape = null;
 				// 检测是否是新建动作
-				if (['circle', 'rect', 'line', 'pencil'].includes(action)) {
+				if (['circle', 'rect', 'line', 'pencil', 'cube'].includes(action)) {
 					shape = {
 						id: Math.random().toString(36).slice(2),
 						type: action,
@@ -416,7 +416,7 @@ function Stage(props: StageProps) {
 						merge($mouseup, $touchend).pipe(
 							tap(() => {
 								// 检测是否是新建动作，更新shape坐标和大小信息
-								if (['rect', 'circle', 'line', 'pencil'].includes(action) && shape) {
+								if (['rect', 'circle', 'line', 'pencil', 'cube'].includes(action) && shape) {
 									// 更新矩形区域大小，在此处更新减少在绘制过程中的计算导致的性能消耗
 									let left = Math.min(shape.left, points[points.length - 1][0]);
 									let top = Math.min(shape.top, points[points.length - 1][1]);
@@ -513,7 +513,7 @@ function Stage(props: StageProps) {
 			const disX = points[points.length - 1][0] - points[0][0];
 			const disY = points[points.length - 1][1] - points[0][1];
 			// 检测是否是新建动作
-			if (['rect', 'circle', 'line', 'pencil'].includes(action) && shape) {
+			if (['rect', 'circle', 'line', 'pencil', 'cube'].includes(action) && shape) {
 				const ctx = outerContainer.current.getContext('2d');
 				ctx.clearRect(0, 0, width, height);
 				let left = Math.min(shape.left, points[points.length - 1][0]);
