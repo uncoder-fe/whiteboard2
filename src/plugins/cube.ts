@@ -4,7 +4,7 @@ const cube: plugin = {
 	type: 'render',
 	action: 'cube',
 	draw: function (ctx, shape) {
-		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;
+		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate, drawStyle } = shape;
 		const x = (width * scaleX) / 2;
 		const y = (width * scaleX) / 2;
 		const z = (width * scaleX) / 2;
@@ -27,6 +27,9 @@ const cube: plugin = {
 			[points[0], points[3], points[2], points[1]], //前
 		];
 		ctx.save();
+		for (const style in drawStyle) {
+			ctx[style] = drawStyle[style];
+		}
 		ctx.translate(left, top + y);
 		for (let i = 0; i < faces.length; i++) {
 			const p = faces[i];

@@ -25,6 +25,7 @@ function Stage(props: StageProps) {
 		strokeStyle: 'black',
 		lineWidth: 2,
 		lineCap: 'round',
+		lineJoin: 'round',
 	});
 	// 辅助线
 	const drawHelpAxis = (ctx, x, y) => {

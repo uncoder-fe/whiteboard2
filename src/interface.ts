@@ -2,6 +2,7 @@ export interface drawStyleI {
 	strokeStyle?: string;
 	lineWidth?: number;
 	lineCap?: string;
+	lineJoin?: string;
 }
 
 

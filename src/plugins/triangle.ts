@@ -5,7 +5,6 @@ const triangle: plugin = {
 	action: 'triangle',
 	draw: function (ctx, shape) {
 		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate, drawStyle } = shape;
-		console.log('shape', left, top, width, height);
 		ctx.save();
 		for (const style in drawStyle) {
 			ctx[style] = drawStyle[style];
