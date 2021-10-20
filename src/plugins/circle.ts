@@ -4,7 +4,7 @@ const rect: plugin = {
 	type: 'render',
 	action: 'circle',
 	draw: function (ctx, shape) {
-		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;
+		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate, drawStyle } = shape;
 		const centerX = left + (width * scaleX) / 2;
 		const centerY = top + (height * scaleY) / 2;
 		// const radius =
@@ -12,8 +12,9 @@ const rect: plugin = {
 		const radiusX = (width * scaleX) / 2;
 		const radiusY = (height * scaleY) / 2;
 		ctx.save();
-		ctx.strokeStyle = 'red';
-		ctx.lineWidth = 4;
+		for (const style in drawStyle) {
+			ctx[style] = drawStyle[style];
+		}
 		ctx.beginPath();
 		ctx.transform(flipX ? -1 : 1, 0, 0, flipY ? -1 : 1, 0, 0);
 		// ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI)
