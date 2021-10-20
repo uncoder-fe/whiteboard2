@@ -29,8 +29,9 @@ const pencil: plugin = {
 				const start = points[i];
 				const end = points[i + 1];
 				if (end) {
-					ctx.moveTo(start[0], start[1]);
-					ctx.lineTo(end[0], end[1]);
+					// ctx.moveTo(start[0], start[1]);
+					// ctx.lineTo(end[0], end[1]);
+					ctx.quadraticCurveTo(start[0], start[1], end[0], end[1]);
 				}
 			}
 			ctx.stroke();

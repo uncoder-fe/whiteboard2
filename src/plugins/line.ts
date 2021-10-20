@@ -3,23 +3,7 @@ import { plugin } from './type.d';
 const line: plugin = {
 	action: 'line',
 	draw: async (ctx, shape) => {
-		const {
-			id,
-			left,
-			top,
-			height,
-			width,
-			scaleX,
-			scaleY,
-			flipX,
-			flipY,
-			rotate,
-			offsetX,
-			offsetY,
-			base64,
-			points,
-			drawStyle,
-		} = shape;
+		const { id, left, top, height, width, scaleX, scaleY, flipX, flipY, rotate, base64, points, drawStyle } = shape;
 		if (!base64) {
 			const len = points.length;
 			const [x, y] = [points[0][0], points[0][1]];
@@ -29,8 +13,8 @@ const line: plugin = {
 				ctx[style] = drawStyle[style];
 			}
 			ctx.beginPath();
-			ctx.moveTo(x + offsetX, y + offsetY);
-			ctx.lineTo(endX + offsetX, endY + offsetY);
+			ctx.moveTo(x, y);
+			ctx.lineTo(endX, endY);
 			ctx.stroke();
 			ctx.closePath();
 			ctx.restore();
@@ -47,8 +31,8 @@ const line: plugin = {
 					};
 				});
 			}
-			const x = flipX ? -(left + width * scaleX + offsetX) : left + offsetX;
-			const y = flipY ? -(top + height * scaleY + offsetY) : top + offsetY;
+			const x = flipX ? -(left + width * scaleX) : left;
+			const y = flipY ? -(top + height * scaleY) : top;
 			ctx.save();
 			// 控制镜像反转
 			ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
