@@ -3,9 +3,9 @@ import { plugin } from './type.d';
 const rect: plugin = {
 	action: 'circle',
 	draw: function (ctx, shape, points) {
-		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate, offsetX, offsetY } = shape;
-		const centerX = left + (width * scaleX) / 2 + offsetX;
-		const centerY = top + (height * scaleY) / 2 + offsetY;
+		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;
+		const centerX = left + (width * scaleX) / 2;
+		const centerY = top + (height * scaleY) / 2;
 		// const radius =
 		// 	Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2)) / 2
 		const radiusX = (width * scaleX) / 2;

@@ -52,6 +52,11 @@ const line: plugin = {
 			ctx.save();
 			// 控制镜像反转
 			ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+			if (rotate) {
+				ctx.translate(left + (width * scaleX) / 2, top + (height * scaleY) / 2);
+				ctx.rotate(rotate);
+				ctx.translate(-(left + (width * scaleX) / 2), -(top + (height * scaleY) / 2));
+			}
 			// 扩展大小，防止线条切边，4
 			const v = drawStyle.lineWidth * 2;
 			ctx.drawImage(image, x - v, y - v, width * scaleX, height * scaleY);

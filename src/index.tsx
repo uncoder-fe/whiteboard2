@@ -47,12 +47,12 @@ function Stage(props: StageProps) {
 		const x = ox - axisOrigin.current[0];
 		const y = oy - axisOrigin.current[1];
 		const hitArry = history.current.filter((item) => {
-			const { left, top, width, height, scaleX, scaleY, offsetX = 0, offsetY = 0 } = item;
+			const { left, top, width, height, scaleX, scaleY } = item;
 			if (
-				left - RECTSIZE + offsetX < x &&
-				x < left + width * scaleX + RECTSIZE * 2 + offsetX &&
-				top - RECTSIZE + offsetY < y &&
-				y < top + height * scaleY + RECTSIZE * 2 + offsetY
+				left - RECTSIZE < x &&
+				x < left + width * scaleX + RECTSIZE * 2 &&
+				top - RECTSIZE < y &&
+				y < top + height * scaleY + RECTSIZE * 2
 			) {
 				// 当是框的时候，检测区域增加RECTSIZE的大小，因为要计算拖拽的圆圈
 				return true;
@@ -67,10 +67,10 @@ function Stage(props: StageProps) {
 		const y = oy - axisOrigin.current[1];
 		const findShape = history.current.find((item) => item.id === currentShapeId.current);
 		if (!findShape) return null;
-		const { left, top, width, height, scaleX, scaleY, offsetX, offsetY } = findShape;
+		const { left, top, width, height, scaleX, scaleY } = findShape;
 		if (
-			left + (width * scaleX) / 2 - RECTSIZE / 2 + offsetX < x &&
-			x < left + (width * scaleX) / 2 + RECTSIZE / 2 + offsetX &&
+			left + (width * scaleX) / 2 - RECTSIZE / 2 < x &&
+			x < left + (width * scaleX) / 2 + RECTSIZE / 2 &&
 			top - RECTSIZE / 2 - 70 < y &&
 			y < top + RECTSIZE / 2 - 70
 		) {
@@ -78,74 +78,69 @@ function Stage(props: StageProps) {
 			return 'rotateCenter';
 		}
 		if (
-			left + (width * scaleX) / 2 - RECTSIZE / 2 + offsetX < x &&
-			x < left + (width * scaleX) / 2 + RECTSIZE / 2 + offsetX &&
-			top - RECTSIZE / 2 + offsetY < y &&
-			y < top + RECTSIZE / 2 + offsetY
+			left + (width * scaleX) / 2 - RECTSIZE / 2 < x &&
+			x < left + (width * scaleX) / 2 + RECTSIZE / 2 &&
+			top - RECTSIZE / 2 < y &&
+			y < top + RECTSIZE / 2
 		) {
 			// 上中(1)
 			return 'topCenter';
 		}
 		if (
-			left + width * scaleX - RECTSIZE / 2 + offsetX < x &&
-			x < left + width * scaleX + RECTSIZE / 2 + offsetX &&
-			top - RECTSIZE / 2 + offsetY < y &&
-			y < top + RECTSIZE / 2 + offsetY
+			left + width * scaleX - RECTSIZE / 2 < x &&
+			x < left + width * scaleX + RECTSIZE / 2 &&
+			top - RECTSIZE / 2 < y &&
+			y < top + RECTSIZE / 2
 		) {
 			// 右上(2)
 			return 'rightTop';
 		}
 		if (
-			left + width * scaleX - RECTSIZE / 2 + offsetX < x &&
-			x < left + width * scaleX + RECTSIZE / 2 + offsetX &&
-			top + (height * scaleY) / 2 - RECTSIZE / 2 + offsetY < y &&
-			y < top + (height * scaleY) / 2 + RECTSIZE / 2 + offsetY
+			left + width * scaleX - RECTSIZE / 2 < x &&
+			x < left + width * scaleX + RECTSIZE / 2 &&
+			top + (height * scaleY) / 2 - RECTSIZE / 2 < y &&
+			y < top + (height * scaleY) / 2 + RECTSIZE / 2
 		) {
 			// 右中(3)
 			return 'rightCenter';
 		}
 		if (
-			left + width * scaleX - RECTSIZE / 2 + offsetX < x &&
-			x < left + width * scaleX + RECTSIZE / 2 + offsetX &&
-			top + height * scaleY - RECTSIZE / 2 + offsetY < y &&
-			y < top + height * scaleY + RECTSIZE / 2 + offsetY
+			left + width * scaleX - RECTSIZE / 2 < x &&
+			x < left + width * scaleX + RECTSIZE / 2 &&
+			top + height * scaleY - RECTSIZE / 2 < y &&
+			y < top + height * scaleY + RECTSIZE / 2
 		) {
 			// 右下(4)
 			return 'rightBottom';
 		}
 		if (
-			left + (width * scaleX) / 2 - RECTSIZE / 2 + offsetX < x &&
-			x < left + (width * scaleX) / 2 + RECTSIZE / 2 + offsetX &&
-			top + height * scaleY - RECTSIZE / 2 + offsetY < y &&
-			y < top + height * scaleY + RECTSIZE / 2 + offsetY
+			left + (width * scaleX) / 2 - RECTSIZE / 2 < x &&
+			x < left + (width * scaleX) / 2 + RECTSIZE / 2 &&
+			top + height * scaleY - RECTSIZE / 2 < y &&
+			y < top + height * scaleY + RECTSIZE / 2
 		) {
 			// 下中(5)
 			return 'bottomCenter';
 		}
 		if (
-			left - RECTSIZE / 2 + offsetX < x &&
-			x < left + RECTSIZE / 2 + offsetX &&
-			top + height * scaleY - RECTSIZE / 2 + offsetY < y &&
-			y < top + height * scaleY + RECTSIZE / 2 + offsetY
+			left - RECTSIZE / 2 < x &&
+			x < left + RECTSIZE / 2 &&
+			top + height * scaleY - RECTSIZE / 2 < y &&
+			y < top + height * scaleY + RECTSIZE / 2
 		) {
 			// 左下(6)
 			return 'leftBottom';
 		}
 		if (
-			left - RECTSIZE / 2 + offsetX < x &&
-			x < left + RECTSIZE / 2 + offsetX &&
-			top + (height * scaleY) / 2 - RECTSIZE / 2 + offsetY < y &&
-			y < top + (height * scaleY) / 2 + RECTSIZE / 2 + offsetY
+			left - RECTSIZE / 2 < x &&
+			x < left + RECTSIZE / 2 &&
+			top + (height * scaleY) / 2 - RECTSIZE / 2 < y &&
+			y < top + (height * scaleY) / 2 + RECTSIZE / 2
 		) {
 			// 左中(7)
 			return 'leftCenter';
 		}
-		if (
-			left - RECTSIZE / 2 + offsetX < x &&
-			x < left + RECTSIZE / 2 + offsetX &&
-			top - RECTSIZE / 2 + offsetY < y &&
-			y < top + RECTSIZE / 2 + offsetY
-		) {
+		if (left - RECTSIZE / 2 < x && x < left + RECTSIZE / 2 && top - RECTSIZE / 2 < y && y < top + RECTSIZE / 2) {
 			// 左上(8)
 			return 'leftTop';
 		}
@@ -194,76 +189,46 @@ function Stage(props: StageProps) {
 		const drawAction = plugins.find((item) => item.action === shape.type);
 		drawAction.draw(ctx, shape);
 		// 绘制轮廓
-		const { left, top, width: widthR, height: heightR, scaleX, scaleY, offsetX = 0, offsetY = 0 } = shape;
+		const { left, top, width: widthR, height: heightR, scaleX, scaleY } = shape;
 		ctx.fillStyle = 'rgba(255,125,113,0.2)';
-		ctx.fillRect(
-			left - RECTSIZE + offsetX,
-			top - RECTSIZE + offsetY,
-			widthR * scaleX + RECTSIZE * 2,
-			heightR * scaleY + RECTSIZE * 2,
-		);
+		ctx.fillRect(left - RECTSIZE, top - RECTSIZE, widthR * scaleX + RECTSIZE * 2, heightR * scaleY + RECTSIZE * 2);
 		ctx.fillStyle = 'yellow';
 		ctx.beginPath();
 		// 旋转按钮
-		ctx.fillRect(
-			left + (widthR * scaleX) / 2 - RECTSIZE / 2 + offsetX,
-			top - RECTSIZE / 2 - 70 + offsetY,
-			RECTSIZE,
-			RECTSIZE,
-		);
+		ctx.fillRect(left + (widthR * scaleX) / 2 - RECTSIZE / 2, top - RECTSIZE / 2 - 70, RECTSIZE, RECTSIZE);
 		// 上中(1)
-		ctx.fillRect(
-			left + (widthR * scaleX) / 2 - RECTSIZE / 2 + offsetX,
-			top - RECTSIZE / 2 + offsetY,
-			RECTSIZE,
-			RECTSIZE,
-		);
+		ctx.fillRect(left + (widthR * scaleX) / 2 - RECTSIZE / 2, top - RECTSIZE / 2, RECTSIZE, RECTSIZE);
 		ctx.closePath();
 		// 右上(2)
-		ctx.fillRect(widthR * scaleX + left - RECTSIZE / 2 + offsetX, top - RECTSIZE / 2 + offsetY, RECTSIZE, RECTSIZE);
+		ctx.fillRect(widthR * scaleX + left - RECTSIZE / 2, top - RECTSIZE / 2, RECTSIZE, RECTSIZE);
 		ctx.closePath();
 		// 右中(3)
 		ctx.fillRect(
-			left + widthR * scaleX - RECTSIZE / 2 + offsetX,
-			top + (heightR * scaleY) / 2 - RECTSIZE / 2 + offsetY,
+			left + widthR * scaleX - RECTSIZE / 2,
+			top + (heightR * scaleY) / 2 - RECTSIZE / 2,
 			RECTSIZE,
 			RECTSIZE,
 		);
 		ctx.closePath();
 		// 右下(4)
-		ctx.fillRect(
-			left + widthR * scaleX - RECTSIZE / 2 + offsetX,
-			top + heightR * scaleY - RECTSIZE / 2 + offsetY,
-			RECTSIZE,
-			RECTSIZE,
-		);
+		ctx.fillRect(left + widthR * scaleX - RECTSIZE / 2, top + heightR * scaleY - RECTSIZE / 2, RECTSIZE, RECTSIZE);
 		ctx.closePath();
 		// 下中(5)
 		ctx.fillRect(
-			left + (widthR * scaleX) / 2 - RECTSIZE / 2 + offsetX,
-			top + heightR * scaleY - RECTSIZE / 2 + offsetY,
+			left + (widthR * scaleX) / 2 - RECTSIZE / 2,
+			top + heightR * scaleY - RECTSIZE / 2,
 			RECTSIZE,
 			RECTSIZE,
 		);
 		ctx.closePath();
 		// 左下(6)
-		ctx.fillRect(
-			left - RECTSIZE / 2 + offsetX,
-			top + heightR * scaleY - RECTSIZE / 2 + offsetY,
-			RECTSIZE,
-			RECTSIZE,
-		);
+		ctx.fillRect(left - RECTSIZE / 2, top + heightR * scaleY - RECTSIZE / 2, RECTSIZE, RECTSIZE);
 		ctx.closePath();
 		// 左中(7)
-		ctx.fillRect(
-			left - RECTSIZE / 2 + offsetX,
-			top + (heightR * scaleY) / 2 - RECTSIZE / 2 + offsetY,
-			RECTSIZE,
-			RECTSIZE,
-		);
+		ctx.fillRect(left - RECTSIZE / 2, top + (heightR * scaleY) / 2 - RECTSIZE / 2, RECTSIZE, RECTSIZE);
 		ctx.closePath();
 		// 左上(8)
-		ctx.fillRect(left - RECTSIZE / 2 + offsetX, top - RECTSIZE / 2 + offsetY, RECTSIZE, RECTSIZE);
+		ctx.fillRect(left - RECTSIZE / 2, top - RECTSIZE / 2, RECTSIZE, RECTSIZE);
 		ctx.closePath();
 		ctx.restore();
 	};
@@ -396,8 +361,6 @@ function Stage(props: StageProps) {
 						top: event.y,
 						width: 0,
 						height: 0,
-						offsetX: 0,
-						offsetY: 0,
 						scaleX: 1,
 						scaleY: 1,
 						flipX: false,
@@ -510,12 +473,10 @@ function Stage(props: StageProps) {
 									shapeR.scaleY = newShape.scaleY;
 									shapeR.flipX = newShape.flipX;
 									shapeR.flipY = newShape.flipY;
-									shapeR.offsetX = newShape.offsetX;
-									shapeR.offsetY = newShape.offsetY;
 									if (isGrow === 'rotateCenter') {
 										const center = {
-											x: shapeR.left + (shapeR.width * shapeR.scaleX) / 2,
-											y: shapeR.top + (shapeR.height * shapeR.scaleY) / 2,
+											x: shapeR.left + (shapeR.width * shapeR.scaleX) / 2 + axisOrigin.current[0],
+											y: shapeR.top + (shapeR.height * shapeR.scaleY) / 2 + axisOrigin.current[1],
 										};
 										// 旋转
 										const rotate = getRotateAngle2(center, {
@@ -587,8 +548,8 @@ function Stage(props: StageProps) {
 				const isGrow = hitSpriteGrow(points[0][0], points[0][1]);
 				if (isGrow === 'rotateCenter') {
 					const center = {
-						x: shape.left + (shape.width * shape.scaleX) / 2,
-						y: shape.top + (shape.height * shape.scaleY) / 2,
+						x: shape.left + (shape.width * shape.scaleX) / 2 + axisOrigin.current[0],
+						y: shape.top + (shape.height * shape.scaleY) / 2 + axisOrigin.current[1],
 					};
 					// 旋转
 					const rotate = getRotateAngle2(center, {
@@ -610,8 +571,6 @@ function Stage(props: StageProps) {
 					cloneShape.scaleY = newShape.scaleY;
 					cloneShape.flipX = newShape.flipX;
 					cloneShape.flipY = newShape.flipY;
-					cloneShape.offsetX = newShape.offsetX;
-					cloneShape.offsetY = newShape.offsetY;
 					drawShapeWithControl(cloneShape);
 				}
 			}

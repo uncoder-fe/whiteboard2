@@ -30,11 +30,14 @@ const App = () => {
 				<button onClick={() => cRef.current.setStyle({ lineWidth: 4 })}>4号笔</button>
 				<button onClick={() => cRef.current.setStyle({ lineWidth: 8 })}>8号笔</button>
 			</div>
+			<div>
+				<button onClick={() => cRef.current.selectAction('eraser')}>橡皮</button>
+				<button onClick={() => cRef.current.setStyle({ lineWidth: 4 })}>小橡皮</button>
+				<button onClick={() => cRef.current.setStyle({ lineWidth: 8 })}>大橡皮</button>
+			</div>
 			<Stage
 				ref={cRef}
-				onChange={(data) => {
-					// console.log(data);
-				}}
+				onChange={(data) => { /*console.log(data);*/ }}
 				height={800}
 				width={800}
 				helpLine

@@ -14,8 +14,6 @@ const pencil: plugin = {
 			flipX,
 			flipY,
 			rotate,
-			offsetX,
-			offsetY,
 			base64,
 			points,
 			drawStyle,
@@ -31,8 +29,8 @@ const pencil: plugin = {
 				const start = points[i];
 				const end = points[i + 1];
 				if (end) {
-					ctx.moveTo(start[0] + offsetX, start[1] + offsetY);
-					ctx.lineTo(end[0] + offsetX, end[1] + offsetY);
+					ctx.moveTo(start[0], start[1]);
+					ctx.lineTo(end[0], end[1]);
 				}
 			}
 			ctx.stroke();
@@ -52,8 +50,13 @@ const pencil: plugin = {
 			ctx.save();
 			// 控制镜像反转
 			ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-			const x = flipX ? -(left + width * scaleX + offsetX) : left + offsetX;
-			const y = flipY ? -(top + height * scaleY + offsetY) : top + offsetY;
+			if (rotate) {
+				ctx.translate(left + (width * scaleX) / 2, top + (height * scaleY) / 2);
+				ctx.rotate(rotate);
+				ctx.translate(-(left + (width * scaleX) / 2), -(top + (height * scaleY) / 2));
+			}
+			const x = flipX ? -(left + width * scaleX) : left;
+			const y = flipY ? -(top + height * scaleY) : top;
 			// 扩展大小，防止线条切边，4
 			const v = drawStyle.lineWidth * 2;
 			ctx.drawImage(image, x - v, y - v, width * scaleX, height * scaleY);

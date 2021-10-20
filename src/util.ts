@@ -32,15 +32,13 @@ export function getRotateAngle2(center, end) {
 // 计算shape位置
 export const genShapePosition = (ops) => {
 	const { isGrow, disX, disY, shape } = ops;
-	const { left, top, width, height, scaleX, scaleY, flipX, flipY, offsetX = 0, offsetY = 0, angle } = shape;
+	const { left, top, width, height, scaleX, scaleY, flipX, flipY, angle } = shape;
 	let newLeft = left;
 	let newTop = top;
 	let newScaleX = scaleX;
 	let newScaleY = scaleY;
 	let newFlipX = flipX;
 	let newFlipY = flipY;
-	let newOffsetX = offsetX;
-	let newOffsetY = offsetY;
 	let increaseX = 0;
 	let increaseY = 0;
 	let newAngle = angle;
@@ -202,8 +200,8 @@ export const genShapePosition = (ops) => {
 		}
 	} else {
 		// 移动
-		newOffsetX = offsetX + disX;
-		newOffsetY = offsetY + disY;
+		newLeft = left + disX;
+		newTop = top + disY;
 	}
 	return {
 		left: newLeft,
@@ -212,8 +210,6 @@ export const genShapePosition = (ops) => {
 		scaleY: newScaleY,
 		flipX: newFlipX,
 		flipY: newFlipY,
-		offsetX: newOffsetX,
-		offsetY: newOffsetY,
 	};
 };
 
@@ -230,8 +226,8 @@ export function pointsToBase64(shape) {
 		left = Math.min(...points.map((point) => point[0])) || 0;
 		top = Math.min(...points.map((point) => point[1])) || 0;
 	}
-	const offsetX = left - padding;
-	const offsetY = top - padding;
+	const offsetOriginX = left - padding;
+	const offsetOriginY = top - padding;
 	const canvas = document.createElement('canvas');
 	canvas.setAttribute('width', `${width}px`);
 	canvas.setAttribute('height', `${height}px`);
@@ -244,15 +240,15 @@ export function pointsToBase64(shape) {
 	}
 	ctx.beginPath();
 	if (type === 'line') {
-		ctx.moveTo(points[0][0] - offsetX, points[0][1] - offsetY);
-		ctx.lineTo(points[len - 1][0] - offsetX, points[len - 1][1] - offsetY);
+		ctx.moveTo(points[0][0] - offsetOriginX, points[0][1] - offsetOriginY);
+		ctx.lineTo(points[len - 1][0] - offsetOriginX, points[len - 1][1] - offsetOriginY);
 	} else {
 		for (let i = 0; i < len; i++) {
 			const start = points[i];
 			const end = points[i + 1];
 			if (end) {
-				ctx.moveTo(start[0] - offsetX, start[1] - offsetY);
-				ctx.lineTo(end[0] - offsetX, end[1] - offsetY);
+				ctx.moveTo(start[0] - offsetOriginX, start[1] - offsetOriginY);
+				ctx.lineTo(end[0] - offsetOriginX, end[1] - offsetOriginY);
 			}
 		}
 	}

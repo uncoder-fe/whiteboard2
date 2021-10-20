@@ -3,7 +3,7 @@ import { plugin } from './type.d';
 const rect: plugin = {
 	action: 'rect',
 	draw: function (ctx, shape, points) {
-		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate, offsetX, offsetY } = shape;
+		const { left, top, width, height, scaleX, scaleY, flipX, flipY, rotate } = shape;
 		ctx.save();
 		ctx.strokeStyle = 'blue';
 		ctx.lineWidth = 10;
@@ -15,8 +15,8 @@ const rect: plugin = {
 			ctx.translate(-(left + (width * scaleX) / 2), -(top + (height * scaleY) / 2));
 		}
 		ctx.strokeRect(
-			flipX ? -(left + width * scaleX + offsetX) : left + offsetX,
-			flipY ? -(top + height * scaleY + offsetY) : top + offsetY,
+			flipX ? -(left + width * scaleX) : left,
+			flipY ? -(top + height * scaleY) : top,
 			width * scaleX,
 			height * scaleY,
 		);
