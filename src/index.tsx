@@ -183,6 +183,7 @@ function Stage(props: StageProps) {
 	const drawShapeWithControl = (shape) => {
 		const ctx = outerContainer.current.getContext('2d');
 		ctx.save();
+		// 保证事件屏/渲染凭位置一致
 		ctx.setTransform(1, 0, 0, 1, axisOrigin.current[0], axisOrigin.current[1]);
 		ctx.clearRect(-axisOrigin.current[0], -axisOrigin.current[1], width, height);
 		// 检测是否是新建动作，更新shape的路径信息
@@ -232,15 +233,19 @@ function Stage(props: StageProps) {
 		ctx.closePath();
 		ctx.restore();
 	};
+	// 清空事件屏
+	const cleanOuter = () => {
+		// 手动清空outerCanvas
+		const ctxOuter = outerContainer.current.getContext('2d');
+		ctxOuter.setTransform(1, 0, 0, 1, axisOrigin.current[0], axisOrigin.current[1]);
+		ctxOuter.clearRect(-axisOrigin.current[0], -axisOrigin.current[1], width, height);
+	};
 	// 注册清空事件
 	const clean = () => {
 		history.current = [];
 		// 重绘，顺便清空
 		reRender();
-		// 手动清空outerCanvas
-		const ctxOuter = outerContainer.current.getContext('2d');
-		ctxOuter.setTransform(1, 0, 0, 1, axisOrigin.current[0], axisOrigin.current[1]);
-		ctxOuter.clearRect(-axisOrigin.current[0], -axisOrigin.current[1], width, height);
+		cleanOuter();
 		// 回调数据结果
 		if (onChange) onChange([]);
 	};
@@ -372,7 +377,7 @@ function Stage(props: StageProps) {
 					};
 				}
 				// 移动
-				if (action === 'move') {
+				if (action === 'move' || action === 'eraser') {
 					// 存在高亮，判定是不是缩放区域
 					const isGrow = hitSpriteGrow(event.x, event.y);
 					if (isGrow) {
@@ -394,7 +399,7 @@ function Stage(props: StageProps) {
 					}
 					if (shape) {
 						currentShapeId.current = shape.id;
-						// 从真实区域删除这个shape的渲染
+						// 从真实区域删除这个shape的渲染，留下其他当背景，性能
 						reRender();
 						// 把这个shape渲染到事件屏操作
 						drawShapeWithControl(shape);
@@ -496,6 +501,11 @@ function Stage(props: StageProps) {
 									const disY = points[points.length - 1][1] - points[0][1];
 									axisOrigin.current[0] = axisOrigin.current[0] + disX;
 									axisOrigin.current[1] = axisOrigin.current[1] + disY;
+									reRender();
+								}
+								// 橡皮擦
+								if (action === 'eraser' && shape) {
+									history.current = history.current.filter((item) => item.id !== shape.id);
 									reRender();
 								}
 								// 回调数据结果

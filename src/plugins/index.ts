@@ -7,6 +7,8 @@ import triangle from './triangle';
 const plugins = [
 	{ type: 'event', action: 'hand' },
 	{ type: 'event', action: 'move' },
+	{ type: 'event', action: 'eraser' },
+	{ type: 'event', action: 'moveCanvas' },
 	line,
 	rect,
 	circle,
