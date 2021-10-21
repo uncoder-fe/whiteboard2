@@ -22,6 +22,9 @@ npm run start
 3. 支持辅助线
 4. 支持插件注册机制
 
+TODO：
+1. 铅笔生成的图片，高清化
+
 # 截图
 
 ![alt 截图](https://github.com/uncoder-fe/whiteboard2/blob/master/screenshot/screenshot-20211021-112524.png '截图')
