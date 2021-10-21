@@ -402,7 +402,9 @@ function Stage(props: StageProps) {
 						// 从真实区域删除这个shape的渲染，留下其他当背景，性能
 						reRender();
 						// 把这个shape渲染到事件屏操作
-						drawShapeWithControl(shape);
+						if (action !== 'eraser') {
+							drawShapeWithControl(shape);
+						}
 					}
 				}
 				return [event.x, event.y, shape];
