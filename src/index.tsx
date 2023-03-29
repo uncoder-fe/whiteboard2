@@ -5,8 +5,34 @@ import { RECTSIZE, CURSOR } from './common/enum';
 import plugins from './plugins';
 import { genShapePosition, getRotateAngle2, pointsToBase64 } from './util';
 import { StageProps, drawStyleI } from './interface';
+import styles from './index.module.less';
 
-import styles from './index.less';
+import * as Y from 'yjs';
+import { WebsocketProvider } from 'y-websocket';
+
+const doc = new Y.Doc();
+const wsProvider = new WebsocketProvider('ws://localhost:1234', 'whiteboard', doc);
+
+wsProvider.on('status', (event) => {
+	console.log(event.status); // logs "connected" or "disconnected"
+});
+
+// 辅助线
+const drawHelpAxis = (ctx, x, y, width, height) => {
+	ctx.save();
+	ctx.setLineDash([8, 18]);
+	ctx.strokeStyle = '#5fea19';
+	ctx.lineWidth = 2;
+	ctx.beginPath();
+	ctx.moveTo(x + width / 2, y);
+	ctx.lineTo(x + width / 2, y + height);
+	ctx.moveTo(x, height / 2 + y);
+	ctx.lineTo(x + width, height / 2 + y);
+	ctx.stroke();
+	ctx.fillText('(0,0)', x, y + 10);
+	ctx.restore();
+};
+
 // 主台
 function Stage(props: StageProps) {
 	const { onChange, height, width, initHistory = [], helpLine = false } = props;
@@ -27,21 +53,6 @@ function Stage(props: StageProps) {
 		lineCap: 'round',
 		lineJoin: 'round',
 	});
-	// 辅助线
-	const drawHelpAxis = (ctx, x, y) => {
-		ctx.save();
-		ctx.setLineDash([8, 18]);
-		ctx.strokeStyle = '#5fea19';
-		ctx.lineWidth = 2;
-		ctx.beginPath();
-		ctx.moveTo(x + width / 2, y);
-		ctx.lineTo(x + width / 2, y + height);
-		ctx.moveTo(x, height / 2 + y);
-		ctx.lineTo(x + width, height / 2 + y);
-		ctx.stroke();
-		ctx.fillText('(0,0)', x, y + 10);
-		ctx.restore();
-	};
 	// 检测是否命中精灵
 	const hitSprite = (ox, oy) => {
 		const x = ox - axisOrigin.current[0];
@@ -158,7 +169,7 @@ function Stage(props: StageProps) {
 		// 清空画布
 		ctx.clearRect(-ox, -oy, width, height);
 		// 辅助线绘制
-		if (helpLine) drawHelpAxis(ctx, 0, 0);
+		if (helpLine) drawHelpAxis(ctx, 0, 0, width, height);
 		// 重新渲染所有精灵
 		for (let i = 0; i < list.length; i++) {
 			const { id, type, base64 } = list[i];
@@ -261,8 +272,7 @@ function Stage(props: StageProps) {
 		shape.scaleY = shape.scaleY + (type === 'enlarge' ? 1 : -1) * scaleFactor * (shape.scaleY / shape.scaleX);
 		shape.left = shape.left + ((type === 'enlarge' ? -1 : 1) * (scaleFactor * shape.width)) / 2;
 		shape.top =
-			shape.top +
-			((type === 'enlarge' ? -1 : 1) * (scaleFactor * (shape.scaleY / shape.scaleX) * shape.height)) / 2;
+			shape.top + ((type === 'enlarge' ? -1 : 1) * (scaleFactor * (shape.scaleY / shape.scaleX) * shape.height)) / 2;
 		drawShapeWithControl(shape);
 		reRender();
 		// 回调数据结果
@@ -610,6 +620,7 @@ function Stage(props: StageProps) {
 		</div>
 	);
 }
+
 const WrappedComponent = forwardRef((props: StageProps, ref) => {
 	return <Stage {...props} forwardedRef={ref} />;
 });

@@ -27,9 +27,10 @@
 		"sourceMap": true,
 		"strictFunctionTypes": true,
 		"allowSyntheticDefaultImports": true,
-		"preserveSymlinks": true
+		"preserveSymlinks": true,
+		"skipLibCheck": true
 	},
-	"include": ["src/*.tsx", "src/*.ts"],
+	"include": ["src/**/*"],
 	"exclude": ["node_modules"],
 	"paths": {
 		"*": ["./node_modules/@types", "./typings/*"],
